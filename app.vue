@@ -38,13 +38,13 @@
           </p>
           <div class="flex flex-col sm:flex-row gap-4">
             <button
-              class="bg-[#e07a5f] hover:bg-[#d8603f] text-white px-6 py-3 md:px-8 md:py-6 text-base md:text-lg rounded-md"
+              class="bg-[#e07a5f] hover:bg-[#d8603f] text-white px-6 h-12 md:h-12 text-base md:text-lg rounded-md flex items-center justify-center"
               @click="scrollToRef('generator')"
             >
               Generate Ghibli Art Now
             </button>
             <button
-              class="border border-[#81b29a] text-[#81b29a] hover:bg-[#81b29a] hover:text-white px-6 py-3 md:px-8 md:py-6 text-base md:text-lg rounded-md"
+              class="border border-[#81b29a] text-[#81b29a] hover:bg-[#81b29a] hover:text-white px-6 h-12 md:h-12 text-base md:text-lg rounded-md flex items-center justify-center"
               @click="scrollToRef('examples')"
             >
               View Gallery
@@ -347,7 +347,7 @@
           Try our free Ghibli AI generator now and experience the magic of Studio Ghibli-inspired artwork.
         </p>
         <button
-          class="bg-[#e07a5f] hover:bg-[#d8603f] text-white px-6 py-3 md:px-8 md:py-6 text-base md:text-lg w-full sm:w-auto rounded-md"
+          class="bg-[#e07a5f] hover:bg-[#d8603f] text-white px-6 h-12 text-base md:text-lg w-full sm:w-auto rounded-md flex items-center justify-center mx-auto"
           @click="scrollToRef('generator')"
         >
           Generate Your Ghibli Art Now
@@ -413,4 +413,41 @@ onMounted(() => {
   `;
   document.head.appendChild(script2);
 });
+</script>
+
+<script>
+export default {
+  data() {
+    return {
+      prompt: "",
+      imageUrl: "",
+      examples: [
+        {
+          url: "/example1.jpg",
+          description: "A serene forest scene with a hidden spirit.",
+        },
+        {
+          url: "/example2.jpg",
+          description: "A bustling marketplace in a Ghibli-inspired town.",
+        },
+        {
+          url: "/example3.jpg",
+          description: "A lone traveler gazing at a majestic mountain range.",
+        },
+      ],
+    }
+  },
+  methods: {
+    async generateImage() {
+      // Placeholder for API call
+      this.imageUrl = "/generated-image.jpg" // Replace with actual API response
+    },
+    scrollToRef(refName) {
+      const element = document.getElementById(refName)
+      if (element) {
+        element.scrollIntoView({ behavior: "smooth" })
+      }
+    },
+  },
+}
 </script>

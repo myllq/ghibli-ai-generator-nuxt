@@ -1,7 +1,7 @@
 <template>
   <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 md:gap-8">
     <!-- Left Column - Controls -->
-    <div class="bg-white p-6 rounded-lg shadow-md">
+    <div class="bg-white p-6 rounded-lg border border-gray-200">
       <h3 class="text-xl font-semibold mb-6 text-[#3d405b]">Generate Ghibli Image</h3>
 
       <!-- Step 1: Upload Image -->
@@ -95,7 +95,8 @@
       <!-- Generate Button -->
       <button
         class="w-full bg-[#e07a5f] hover:bg-[#d8603f] text-white py-2 px-4 rounded-md flex items-center justify-center"
-        :disabled="!previewUrl || isGenerating"
+        :disabled="!previewUrl || !prompt || isGenerating"
+        :class="{ 'opacity-50 cursor-not-allowed': !previewUrl || !prompt || isGenerating }"
         @click="generateImage"
       >
         <template v-if="isGenerating">
@@ -125,7 +126,7 @@
     </div>
 
     <!-- Right Column - Preview -->
-    <div class="bg-white p-6 rounded-lg shadow-md">
+    <div class="bg-white p-6 rounded-lg border border-gray-200">
       <h3 class="text-xl font-semibold mb-4 text-[#3d405b]">Preview</h3>
 
       <div v-if="isGenerating" class="flex flex-col items-center justify-center h-[300px]">
@@ -225,7 +226,7 @@ const handleDrop = (e) => {
 };
 
 const generateImage = () => {
-  if (!previewUrl.value) return;
+  if (!previewUrl.value || !prompt.value) return;
 
   isGenerating.value = true;
   progress.value = 0;
