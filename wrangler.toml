@@ -1,0 +1,6 @@
+name = "ghibli-ai-generator"
+compatibility_date = "2023-10-30"
+main = ".output/server/index.mjs"
+
+[site]
+bucket = ".output/public"
