@@ -1,0 +1,7 @@
+# 依赖目录
+node_modules/
+.nuxt/
+.output/
+
+# 构建输出
+dist/
