@@ -1,0 +1,18 @@
+# Ghibli AI Generator
+
+> A free online tool that transforms ordinary photos into Studio Ghibli-style artwork using AI technology, with no registration required.
+
+## Core Content
+- [Image Generator](https://ghibliaigenerator.io/#generator): Transform your photos into Ghibli-style artwork
+- [Video Generator](https://ghibliaigenerator.io/#generator): Convert your photos into Ghibli-style short videos
+- [Gallery](https://ghibliaigenerator.io/#examples): View beautiful examples created with our AI generator
+
+## Common Resources
+- [Usage Guide](https://ghibliaigenerator.io/#how-to): Step-by-step guide on how to use our Ghibli AI generator
+- [Features](https://ghibliaigenerator.io/#features): Learn about the powerful features of our AI generator
+- [FAQ](https://ghibliaigenerator.io/#faq): Frequently asked questions about our Ghibli AI generator
+
+## Latest Updates
+- [Multiple Style Variations](https://ghibliaigenerator.io/#features): Updated April 2023
+- [High-Quality Transformations](https://ghibliaigenerator.io/#features): Updated April 2023
+- [Mobile Responsive Design](https://ghibliaigenerator.io/#generator): Updated April 2023
