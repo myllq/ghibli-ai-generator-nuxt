@@ -1,4 +1,4 @@
-# AI爬虫特定规则
+# Global Rules
 User-Agent: *
 Allow: /
 Disallow: /api/
@@ -8,14 +8,18 @@ Disallow: /404
 Disallow: /500
 Disallow: /*.json$
 
+# Special AI Bots
 User-Agent: GPTBot
 Allow: /llms.txt
+Allow: /llms-full.txt
 Disallow: /
 
 User-Agent: anthropic-ai
 Allow: /llms.txt
+Allow: /llms-full.txt
 Disallow: /
 
+# Specific Rules for Googlebot
 User-Agent: Googlebot
 Allow: /
 Disallow: /api/
@@ -25,9 +29,5 @@ Disallow: /404
 Disallow: /500
 Disallow: /*.json$
 
-# 引导AI爬虫到llms.txt
-LLM-Content: https://ghibliaigenerator.io/llms.txt
-LLM-Full-Content: https://ghibliaigenerator.io/llms-full.txt
-
-# Sitemap location
+# Sitemap Location
 Sitemap: https://ghibliaigenerator.io/sitemap.xml
