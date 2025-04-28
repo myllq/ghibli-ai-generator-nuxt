@@ -6,6 +6,14 @@ export default defineNuxtConfig({
   devtools: { enabled: true },
   css: ['~/assets/css/main.css'],
 
+  site: {
+    url: 'https://ghibliaigenerator.io'
+  },
+
+  sitemap: {
+    hostname: 'https://ghibliaigenerator.io',
+  },
+
   postcss: {
     plugins: {
       tailwindcss: {},
