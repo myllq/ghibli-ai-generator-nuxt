@@ -6,10 +6,6 @@ export default defineNuxtConfig({
   devtools: { enabled: true },
   css: ['~/assets/css/main.css'],
 
-  nitro: {
-    preset: 'static' // 告诉 Nuxt 明确用 "静态部署"
-  },
-
   postcss: {
     plugins: {
       tailwindcss: {},
