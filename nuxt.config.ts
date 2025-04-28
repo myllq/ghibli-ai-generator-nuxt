@@ -6,6 +6,14 @@ export default defineNuxtConfig({
   devtools: { enabled: true },
   css: ['~/assets/css/main.css'],
 
+  site: {
+    url: 'https://ghibliaigenerator.io'
+  },
+
+  nitro: {
+    preset: 'static' // 告诉 Nuxt 明确用 "静态部署"
+  },
+
   sitemap: {
     hostname: 'https://ghibliaigenerator.io',
   },
