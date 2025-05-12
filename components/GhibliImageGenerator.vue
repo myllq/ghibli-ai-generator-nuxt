@@ -144,6 +144,7 @@
           </div>
         </div>
         <p class="text-gray-500">Generating your Ghibli-style image...</p>
+        <p class="text-gray-500 text-sm mt-1">It takes about 1 minute...</p>
       </div>
       
       <div v-else-if="generatedImage" class="space-y-4">
@@ -280,7 +281,7 @@ const createTask = async () => {
 
     // 测试环境：http://localhost:8000/api/v1/images/task
     // 生产环境：https://api.ghibliaigenerator.io/api/v1/images/task
-    
+
     const response = await fetch('https://api.ghibliaigenerator.io/api/v1/images/task', {
       method: 'POST',
       body: formData
