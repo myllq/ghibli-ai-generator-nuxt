@@ -2,7 +2,9 @@
   <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 md:gap-8">
     <!-- Left Column - Controls -->
     <div class="bg-white p-6 rounded-lg border border-gray-200">
-      <h3 class="text-xl font-semibold mb-6 text-[#3d405b]">Generate Ghibli Image</h3>
+      <div class="flex justify-between items-center mb-6">
+        <h3 class="text-xl font-semibold text-[#3d405b]">Generate Ghibli Image</h3>
+      </div>
 
       <!-- Step 1: Upload Image -->
       <div class="mb-6">
@@ -45,58 +47,55 @@
         </div>
       </div>
 
-      <!-- Step 2: Enter Prompt -->
+      <!-- Step 2: Select Ratio -->
       <div class="mb-6">
-        <label class="text-lg font-medium mb-2 block">2. Enter Prompt</label>
-        <textarea
-          v-model="prompt"
-          placeholder="Convert photos to Ghibli style"
-          class="w-full min-h-[100px] p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#81b29a]"
-        ></textarea>
+        <label class="text-lg font-medium mb-2 block">2. Select Ratio</label>
+        <div class="flex space-x-3">
+          <button 
+            class="px-4 py-3 flex items-center gap-2 rounded-lg transition-all border"
+            :class="selectedRatio === '3:2' ? 'border-[#81b29a] bg-[#81b29a]/5' : 'border-gray-200 hover:border-gray-300'"
+            @click="selectedRatio = '3:2'"
+          >
+            <div class="w-5 h-4 border rounded-sm"
+              :class="selectedRatio === '3:2' ? 'border-[#81b29a]' : 'border-gray-400'"
+            ></div>
+            <span class="text-sm" :class="selectedRatio === '3:2' ? 'text-[#81b29a]' : 'text-gray-600'">3:2</span>
+          </button>
+          
+          <button 
+            class="px-4 py-3 flex items-center gap-2 rounded-lg transition-all border"
+            :class="selectedRatio === '2:3' ? 'border-[#81b29a] bg-[#81b29a]/5' : 'border-gray-200 hover:border-gray-300'"
+            @click="selectedRatio = '2:3'"
+          >
+            <div class="w-4 h-5 border rounded-sm"
+              :class="selectedRatio === '2:3' ? 'border-[#81b29a]' : 'border-gray-400'"
+            ></div>
+            <span class="text-sm" :class="selectedRatio === '2:3' ? 'text-[#81b29a]' : 'text-gray-600'">2:3</span>
+          </button>
+          
+          <button 
+            class="px-4 py-3 flex items-center gap-2 rounded-lg transition-all border"
+            :class="selectedRatio === '1:1' ? 'border-[#81b29a] bg-[#81b29a]/5' : 'border-gray-200 hover:border-gray-300'"
+            @click="selectedRatio = '1:1'"
+          >
+            <div class="w-4 h-4 border rounded-sm"
+              :class="selectedRatio === '1:1' ? 'border-[#81b29a]' : 'border-gray-400'"
+            ></div>
+            <span class="text-sm" :class="selectedRatio === '1:1' ? 'text-[#81b29a]' : 'text-gray-600'">1:1</span>
+          </button>
+        </div>
       </div>
 
-      <!-- Step 3: Select Ratio -->
-      <div class="mb-6">
-        <label class="text-lg font-medium mb-2 block">3. Select Ratio</label>
-        <div class="flex space-x-4">
-          <div class="flex items-center space-x-2">
-            <input 
-              type="radio" 
-              id="ratio-3-2" 
-              value="3:2" 
-              v-model="selectedRatio"
-              class="h-4 w-4 text-[#81b29a] focus:ring-[#81b29a]" 
-            />
-            <label for="ratio-3-2">3:2</label>
-          </div>
-          <div class="flex items-center space-x-2">
-            <input 
-              type="radio" 
-              id="ratio-2-3" 
-              value="2:3" 
-              v-model="selectedRatio"
-              class="h-4 w-4 text-[#81b29a] focus:ring-[#81b29a]" 
-            />
-            <label for="ratio-2-3">2:3</label>
-          </div>
-          <div class="flex items-center space-x-2">
-            <input 
-              type="radio" 
-              id="ratio-1-1" 
-              value="1:1" 
-              v-model="selectedRatio"
-              class="h-4 w-4 text-[#81b29a] focus:ring-[#81b29a]" 
-            />
-            <label for="ratio-1-1">1:1</label>
-          </div>
-        </div>
+      <!-- 在 Generate Button 上方添加错误提示 -->
+      <div v-if="errorMessage" class="mb-4 p-3 bg-red-50 text-red-600 rounded-md text-sm">
+        {{ errorMessage }}
       </div>
 
       <!-- Generate Button -->
       <button
         class="w-full bg-[#e07a5f] hover:bg-[#d8603f] text-white py-2 px-4 rounded-md flex items-center justify-center"
-        :disabled="!previewUrl || !prompt || isGenerating"
-        :class="{ 'opacity-50 cursor-not-allowed': !previewUrl || !prompt || isGenerating }"
+        :disabled="!previewUrl || isGenerating"
+        :class="{ 'opacity-50 cursor-not-allowed': !previewUrl || isGenerating }"
         @click="generateImage"
       >
         <template v-if="isGenerating">
@@ -156,13 +155,26 @@
           />
         </div>
         <div class="flex justify-center">
-          <button class="bg-[#81b29a] hover:bg-[#6a9d87] text-white py-2 px-4 rounded-md w-full flex items-center justify-center" @click="downloadImage">
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4 mr-2">
-              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-              <polyline points="7 10 12 15 17 10"></polyline>
-              <line x1="12" y1="15" x2="12" y2="3"></line>
-            </svg>
-            Download
+          <button 
+            class="bg-[#81b29a] hover:bg-[#6a9d87] text-white py-2 px-4 rounded-md w-full flex items-center justify-center"
+            :disabled="isDownloading"
+            :class="{ 'opacity-75 cursor-wait': isDownloading }"
+            @click="downloadImage"
+          >
+            <template v-if="isDownloading">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4 mr-2 animate-spin">
+                <path d="M21 12a9 9 0 1 1-6.219-8.56"></path>
+              </svg>
+              Downloading...
+            </template>
+            <template v-else>
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4 mr-2">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                <polyline points="7 10 12 15 17 10"></polyline>
+                <line x1="12" y1="15" x2="12" y2="3"></line>
+              </svg>
+              Download
+            </template>
           </button>
         </div>
       </div>
@@ -187,7 +199,7 @@
 </template>
 
 <script setup>
-import { ref } from 'vue';
+import { ref, onMounted } from 'vue';
 
 const previewUrl = ref(null);
 const selectedFile = ref(null);
@@ -198,6 +210,39 @@ const prompt = ref("");
 const selectedRatio = ref("3:2");
 const fileUpload = ref(null);
 const downloadLink = ref(null);
+const taskId = ref(null);
+const errorMessage = ref(null);
+const pollingInterval = ref(null);
+
+// 添加使用次数相关的变量
+const MAX_DAILY_USES = 2;
+
+// 添加下载状态变量
+const isDownloading = ref(false);
+
+// 检查今日使用次数
+const checkDailyLimit = () => {
+  const today = new Date().toISOString().split('T')[0];
+  const usageKey = `ghibli_daily_usage_${today}`;
+  
+  // 获取今日使用次数
+  let dailyUsage = localStorage.getItem(usageKey);
+  if (!dailyUsage) {
+    localStorage.setItem(usageKey, '0');
+    return 0;
+  }
+  
+  return parseInt(dailyUsage);
+};
+
+// 增加使用次数
+const incrementDailyUsage = () => {
+  const today = new Date().toISOString().split('T')[0];
+  const usageKey = `ghibli_daily_usage_${today}`;
+  
+  let currentUsage = checkDailyLimit();
+  localStorage.setItem(usageKey, (currentUsage + 1).toString());
+};
 
 const handleFileChange = (e) => {
   const file = e.target.files?.[0];
@@ -225,48 +270,198 @@ const handleDrop = (e) => {
   }
 };
 
-const generateImage = () => {
-  if (!previewUrl.value || !prompt.value) return;
+const createTask = async () => {
+  try {
+    errorMessage.value = null;
+    
+    const formData = new FormData();
+    formData.append('file', selectedFile.value);
+    formData.append('size', String(selectedRatio.value));
 
+    // 测试环境：http://localhost:8000/api/v1/images/task
+    // 生产环境：https://api.ghibliaigenerator.io/api/v1/images/task
+    
+    const response = await fetch('https://api.ghibliaigenerator.io/api/v1/images/task', {
+      method: 'POST',
+      body: formData
+    });
+    
+    const result = await response.json();
+    
+    if (result.code === 200) {
+      taskId.value = result.data.task_id;
+      return true;
+    }
+    
+    // Handle error states
+    switch (result.code) {
+      case 401:
+        errorMessage.value = 'Authentication failed. Please log in again.';
+        break;
+      case 402:
+        errorMessage.value = 'Insufficient credits.';
+        break;
+      case 422:
+        errorMessage.value = 'Invalid parameters. Please check your input.';
+        break;
+      case 429:
+        if (result.msg?.includes('daily limit')) {
+          errorMessage.value = 'Daily limit reached. Please try again tomorrow.';
+        } else {
+          errorMessage.value = 'Too many requests. Please try again later.';
+        }
+        break;
+      case 455:
+        errorMessage.value = 'System maintenance in progress. Please try again later.';
+        break;
+      case 505:
+        errorMessage.value = 'This feature is currently disabled.';
+        break;
+      default:
+        errorMessage.value = 'Failed to create task. Please try again.';
+    }
+    return false;
+  } catch (error) {
+    console.error('Create task error:', error);
+    errorMessage.value = 'Network error. Please check your connection.';
+    return false;
+  }
+};
+
+const checkTaskStatus = async () => {
+  try {
+    // 测试环境：http://localhost:8000/api/v1/images/task?task_id=${taskId.value}
+    // 正式环境：https://api.ghibliaigenerator.io/api/v1/images/task?task_id=${taskId.value}
+
+    const response = await fetch(`https://api.ghibliaigenerator.io/api/v1/images/task?task_id=${taskId.value}`);
+    const result = await response.json();
+    
+    if (result.code === 200) {
+      const { progress: taskProgress, status, output, error_code, error_msg } = result.data;
+      
+      switch (status) {
+        case 'GENERATING':
+          progress.value = Math.round(parseFloat(taskProgress) * 100);
+          // Query again after 5 seconds if still generating
+          pollingInterval.value = setTimeout(checkTaskStatus, 5000);
+          break;
+          
+        case 'SUCCESS':
+          progress.value = 100;
+          isGenerating.value = false;
+          generatedImage.value = output;
+          break;
+          
+        case 'CREATE_TASK_FAILED':
+        case 'GENERATE_FAILED':
+          isGenerating.value = false;
+          progress.value = 0;
+          
+          if (error_code === 400) {
+            errorMessage.value = 'Content violation detected.';
+          } else if (error_code === 451) {
+            errorMessage.value = 'Failed to download image.';
+          } else {
+            errorMessage.value = error_msg || 'Generation failed. Please try again.';
+          }
+          break;
+      }
+    }
+  } catch (error) {
+    console.error('Check task status error:', error);
+    isGenerating.value = false;
+    progress.value = 0;
+    errorMessage.value = 'Network error. Please check your connection.';
+  }
+};
+
+// 修改 generateImage 方法
+const generateImage = async () => {
+  if (!previewUrl.value) return;
+  
+  // 检查使用次数限制
+  const currentUsage = checkDailyLimit();
+  if (currentUsage >= MAX_DAILY_USES) {
+    errorMessage.value = 'Daily limit reached. Please try again tomorrow.';
+    return;
+  }
+  
   isGenerating.value = true;
   progress.value = 0;
+  errorMessage.value = null;
 
-  // Simulate progress
-  const interval = setInterval(() => {
-    progress.value += 5;
-    if (progress.value >= 100) {
-      clearInterval(interval);
-      progress.value = 100;
-    }
-  }, 100);
-
-  // Simulate image generation with a timeout
-  setTimeout(() => {
-    // For demo purposes, we're just using placeholder images
-    // In a real app, you would call your AI service here
-    generatedImage.value = `/images/ghibli-image${Math.floor(Math.random() * 3) + 1}-after.webp`;
+  const success = await createTask();
+  
+  if (success) {
+    // 增加使用次数
+    incrementDailyUsage();
+    // 立即进行第一次查询
+    checkTaskStatus();
+  } else {
     isGenerating.value = false;
-    clearInterval(interval);
-    progress.value = 100;
-  }, 2000);
+  }
 };
 
 const resetGenerator = () => {
   selectedFile.value = null;
   previewUrl.value = null;
   generatedImage.value = null;
-  prompt.value = "";
   progress.value = 0;
-};
-
-const downloadImage = () => {
-  if (generatedImage.value && downloadLink.value) {
-    // Create a temporary link to download the image
-    downloadLink.value.href = generatedImage.value;
-    downloadLink.value.download = `ghibli-style-${Date.now()}.webp`;
-    downloadLink.value.click();
+  errorMessage.value = null;
+  taskId.value = null;
+  
+  if (pollingInterval.value) {
+    clearTimeout(pollingInterval.value); // 改用 clearTimeout
+    pollingInterval.value = null;
   }
 };
+
+const downloadImage = async () => {
+  if (generatedImage.value && !isDownloading.value) {
+    try {
+      isDownloading.value = true;
+      
+      // 获取图片数据
+      const response = await fetch(generatedImage.value);
+      const blob = await response.blob();
+      
+      // 创建临时的 blob URL
+      const blobUrl = window.URL.createObjectURL(blob);
+      
+      // 创建临时下载链接
+      const tempLink = document.createElement('a');
+      tempLink.href = blobUrl;
+      tempLink.download = `ghibli-style-${Date.now()}.webp`;
+      
+      // 触发下载
+      document.body.appendChild(tempLink);
+      tempLink.click();
+      
+      // 清理
+      document.body.removeChild(tempLink);
+      window.URL.revokeObjectURL(blobUrl);
+    } catch (error) {
+      console.error('Download error:', error);
+      errorMessage.value = 'Failed to download image. Please try again.';
+    } finally {
+      isDownloading.value = false;
+    }
+  }
+};
+
+// 添加剩余次数显示
+const remainingUses = ref(MAX_DAILY_USES);
+
+// 更新剩余次数显示
+const updateRemainingUses = () => {
+  const currentUsage = checkDailyLimit();
+  remainingUses.value = Math.max(0, MAX_DAILY_USES - currentUsage);
+};
+
+// 组件挂载时更新剩余次数
+onMounted(() => {
+  updateRemainingUses();
+});
 </script>
 
 <style scoped>

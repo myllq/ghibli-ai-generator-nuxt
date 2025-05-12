@@ -177,7 +177,7 @@ const handleTouchMove = (e) => {
 const startAutoPlay = () => {
   autoPlayInterval = setInterval(() => {
     nextSlide();
-  }, 5000);
+  }, 3000);
 };
 
 // Pause auto play on hover

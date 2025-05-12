@@ -214,7 +214,7 @@ const generateVideo = () => {
     isGenerating.value = false;
     clearInterval(interval);
     progress.value = 100;
-  }, 5000);
+  }, 3000);
 };
 
 const resetGenerator = () => {
