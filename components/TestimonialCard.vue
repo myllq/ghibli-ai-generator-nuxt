@@ -8,7 +8,7 @@
         {{ initial }}
       </div>
       <div>
-        <h4 class="font-semibold text-[#3d405b]">{{ name }}</h4>
+        <div class="font-semibold text-[#3d405b]">{{ name }}</div>
         <div class="flex">
           <svg 
             v-for="i in 5" 

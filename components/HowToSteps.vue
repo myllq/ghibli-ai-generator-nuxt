@@ -2,7 +2,6 @@
   <div class="grid grid-cols-1 md:grid-cols-12 gap-6 md:gap-8 items-center">
     <!-- Left side: Steps - now takes 7 columns instead of 6 -->
     <div class="md:col-span-7 space-y-4 md:space-y-6 bg-[#f8f5f0]/50 p-4 md:p-6 rounded-lg">
-      <h3 class="text-xl md:text-2xl font-semibold text-[#3d405b] mb-4">Follow These Simple Steps</h3>
       <div v-for="step in steps" :key="step.number" class="flex items-start gap-3 md:gap-4">
         <!-- Step Number Circle -->
         <div
@@ -14,10 +13,10 @@
 
         <!-- Content -->
         <div class="flex-grow">
-          <h4 class="text-base md:text-lg font-semibold mb-1 flex items-center">
+          <h3 class="text-base md:text-lg font-semibold mb-1 flex items-center">
             <span class="mr-2">Step {{ step.number }}:</span>
             {{ step.title }}
-          </h4>
+          </h3>
           <p class="text-sm md:text-base text-gray-600">{{ step.description }}</p>
         </div>
       </div>

@@ -217,9 +217,6 @@
     <section class="py-16 bg-[#f8f5f0]">
       <div class="container mx-auto px-4">
         <h2 class="text-3xl font-bold text-center text-[#3d405b] mb-6">How to Use Our Ghibli AI Generator</h2>
-        <p class="text-center text-gray-600 mb-10 max-w-2xl mx-auto">
-          Follow these simple steps to transform your photos into Ghibli-style artwork.
-        </p>
         <HowToSteps />
       </div>
     </section>
@@ -396,58 +393,67 @@ const scrollToRef = (refName) => {
   }
 };
 
-// Add Google Analytics
-onMounted(() => {
-  // Google Analytics
-  const script1 = document.createElement('script');
-  script1.async = true;
-  script1.src = 'https://www.googletagmanager.com/gtag/js?id=G-RVJ3ZNTEQ2';
-  document.head.appendChild(script1);
-
-  const script2 = document.createElement('script');
-  script2.innerHTML = `
-    window.dataLayer = window.dataLayer || [];
-    function gtag(){dataLayer.push(arguments);}
-    gtag('js', new Date());
-    gtag('config', 'G-RVJ3ZNTEQ2');
-  `;
-  document.head.appendChild(script2);
-});
-</script>
-
-<script>
-export default {
-  data() {
-    return {
-      prompt: "",
-      imageUrl: "",
-      examples: [
-        {
-          url: "/example1.jpg",
-          description: "A serene forest scene with a hidden spirit.",
-        },
-        {
-          url: "/example2.jpg",
-          description: "A bustling marketplace in a Ghibli-inspired town.",
-        },
-        {
-          url: "/example3.jpg",
-          description: "A lone traveler gazing at a majestic mountain range.",
-        },
-      ],
-    }
-  },
-  methods: {
-    async generateImage() {
-      // Placeholder for API call
-      this.imageUrl = "/generated-image.jpg" // Replace with actual API response
-    },
-    scrollToRef(refName) {
-      const element = document.getElementById(refName)
-      if (element) {
-        element.scrollIntoView({ behavior: "smooth" })
-      }
-    },
-  },
+const jsonLdData = {
+  "@context": "https://schema.org",
+  "@type": "WebApplication",
+  "name": "Free Ghibli AI Art Generator Online - No Sign-up Required",
+  "description": "Transform your photos into stunning Ghibli-style artwork with our free AI generator. Create magical Ghibli art in seconds, no registration needed.",
+  "url": "https://ghibliaigenerator.io",
+  "applicationCategory": "Art & Design",
+  "offers": {
+    "@type": "Offer",
+    "price": "0",
+    "priceCurrency": "USD"
+  }
 }
+
+useHead({
+  title: 'Free Ghibli AI Generator Online - No Sign-up Required',
+  meta: [
+    { 
+      name: 'description', 
+      content: 'Transform your photos into stunning Ghibli-style artwork with our Ghibli AI generator. Create magical Ghibli art in seconds, no registration needed.' 
+    },
+    {
+      name: 'keywords',
+      content: 'ghibli ai generator, ghibli art generator, studio ghibli ai, Ghibli image generator, ghibli style generator'
+    }
+  ],
+  link: [
+    { 
+      rel: 'canonical', 
+      href: 'https://ghibliaigenerator.io' 
+    },
+    { 
+      rel: 'icon', 
+      href: '/images/ghibli-ai-generator-logo.png', 
+      sizes: '32x32' 
+    },
+    { 
+      rel: 'apple-touch-icon', 
+      href: '/images/ghibli-ai-generator-logo.png' 
+    }
+  ],
+  script: [
+    {
+      src: 'https://www.googletagmanager.com/gtag/js?id=G-RVJ3ZNTEQ2',
+      async: true
+    },
+    {
+      children: `
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'G-RVJ3ZNTEQ2');
+      `
+    },
+    {
+      type: 'application/ld+json',
+      innerHTML: JSON.stringify(jsonLdData)
+    }
+  ],
+  htmlAttrs: {
+    lang: 'en'
+  }
+})
 </script>
