@@ -19,8 +19,6 @@
 
     <div v-if="activeTab === 'image'" class="space-y-8">
       <GhibliImageGenerator />
-      <p class="text-gray-500">Generating your Ghibli-style image...</p>
-      <p class="text-gray-500 text-sm mt-1">It takes about 1 minute...</p>
     </div>
 
     <div v-if="activeTab === 'video'" class="space-y-8">
