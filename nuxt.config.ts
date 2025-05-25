@@ -2,8 +2,8 @@ import { defineNuxtConfig } from 'nuxt/config'
 
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
-  modules: ['@nuxtjs/sitemap'],
   devtools: { enabled: true },
+  modules: ['@nuxtjs/sitemap'],
   css: ['~/assets/css/main.css'],
   // 添加日志配置
   logLevel: 'warn',
@@ -47,5 +47,9 @@ export default defineNuxtConfig({
     }
   },
 
-  compatibilityDate: '2025-04-26'
+  compatibilityDate: '2025-04-26',
+
+  build: {
+    transpile: ['@vueuse/head', '@unhead/vue']
+  }
 })
