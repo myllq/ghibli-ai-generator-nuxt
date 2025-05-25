@@ -152,7 +152,6 @@
 
 <script setup>
 import { ref, onMounted } from 'vue';
-import { useHead } from '@vueuse/head'
 import content from '~/content/index.json'
 import HeroCarousel from '~/components/ghibli-ai-generator/HeroCarousel.vue';
 import GhibliAiGenerator from '~/components/ghibli-ai-generator/GhibliAiGenerator.vue';

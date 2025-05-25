@@ -48,8 +48,4 @@ export default defineNuxtConfig({
   },
 
   compatibilityDate: '2025-04-26',
-
-  build: {
-    transpile: ['@vueuse/head', '@unhead/vue']
-  }
 })
