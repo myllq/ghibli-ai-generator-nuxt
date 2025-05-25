@@ -3,7 +3,7 @@
     <!-- Main Slider -->
     <div class="relative w-full h-[500px] rounded-lg overflow-hidden shadow-xl">
       <div
-        v-for="(item, index) in carouselItems"
+        v-for="(item, index) in data.carouselItems"
         :key="item.id"
         :class="`absolute inset-0 transition-opacity duration-500 ${
           index === activeIndex ? 'opacity-100 z-10' : 'opacity-0 z-0'
@@ -90,7 +90,7 @@
     <!-- Dot Navigation -->
     <div class="flex justify-center gap-2 mt-4">
       <button
-        v-for="(_, index) in carouselItems"
+        v-for="(_, index) in data.carouselItems"
         :key="index"
         @click="goToSlide(index)"
         :class="`w-3 h-3 rounded-full transition-all ${
@@ -105,29 +105,12 @@
 <script setup>
 import { ref, onMounted, onUnmounted } from 'vue';
 
-const carouselItems = [
-  {
-    id: 1,
-    beforeImage: "/images/ghibli-image1-before.jpg",
-    afterImage: "/images/ghibli-image1-after.webp",
-    beforeAlt: "Original Titanic scene",
-    afterAlt: "Ghibli style Titanic scene",
-  },
-  {
-    id: 2,
-    beforeImage: "/images/ghibli-image2-before.jpg",
-    afterImage: "/images/ghibli-image2-after.webp",
-    beforeAlt: "Original rally scene",
-    afterAlt: "Ghibli style rally scene",
-  },
-  {
-    id: 3,
-    beforeImage: "/images/ghibli-image3-before.webp",
-    afterImage: "/images/ghibli-image3-after.webp",
-    beforeAlt: "Original lakeside scene",
-    afterAlt: "Ghibli style lakeside scene",
-  },
-];
+const props = defineProps({
+  data: {
+    type: Object,
+    required: true
+  }
+});
 
 const activeIndex = ref(0);
 const sliderPosition = ref(50);
@@ -136,11 +119,11 @@ const isDragging = ref(false);
 let autoPlayInterval = null;
 
 const nextSlide = () => {
-  activeIndex.value = activeIndex.value === carouselItems.length - 1 ? 0 : activeIndex.value + 1;
+  activeIndex.value = activeIndex.value === props.data.carouselItems.length - 1 ? 0 : activeIndex.value + 1;
 };
 
 const prevSlide = () => {
-  activeIndex.value = activeIndex.value === 0 ? carouselItems.length - 1 : activeIndex.value - 1;
+  activeIndex.value = activeIndex.value === 0 ? props.data.carouselItems.length - 1 : activeIndex.value - 1;
 };
 
 const goToSlide = (index) => {

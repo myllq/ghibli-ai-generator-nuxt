@@ -8,7 +8,7 @@
         {{ initial }}
       </div>
       <div>
-        <div class="font-semibold text-[#3d405b]">{{ name }}</div>
+        <div class="font-semibold text-[#3d405b]">{{ testimonial.name }}</div>
         <div class="flex">
           <svg 
             v-for="i in 5" 
@@ -17,19 +17,19 @@
             width="16" 
             height="16" 
             viewBox="0 0 24 24" 
-            :fill="i <= rating ? '#f2cc8f' : 'none'" 
+            :fill="i <= testimonial.rating ? '#f2cc8f' : 'none'" 
             stroke="currentColor" 
             stroke-width="2" 
             stroke-linecap="round" 
             stroke-linejoin="round" 
-            :class="`h-3 w-3 md:h-4 md:w-4 ${i <= rating ? 'text-[#f2cc8f]' : 'text-gray-300'}`"
+            :class="`h-3 w-3 md:h-4 md:w-4 ${i <= testimonial.rating ? 'text-[#f2cc8f]' : 'text-gray-300'}`"
           >
             <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
           </svg>
         </div>
       </div>
     </div>
-    <p class="text-sm md:text-base text-gray-600 italic">"{{ text }}"</p>
+    <p class="text-sm md:text-base text-gray-600 italic">"{{ testimonial.text }}"</p>
   </div>
 </template>
 
@@ -37,27 +37,19 @@
 import { computed } from 'vue';
 
 const props = defineProps({
-  name: {
-    type: String,
-    required: true
-  },
-  rating: {
-    type: Number,
-    required: true
-  },
-  text: {
-    type: String,
+  testimonial: {
+    type: Object,
     required: true
   }
 });
 
 // Extract first letter of the name
-const initial = computed(() => props.name.charAt(0));
+const initial = computed(() => props.testimonial.name.charAt(0));
 
 // Generate a consistent color based on the name
 const colors = ["#e07a5f", "#81b29a", "#f2cc8f", "#3d405b"];
 const bgColor = computed(() => {
-  const colorIndex = props.name.charCodeAt(0) % colors.length;
+  const colorIndex = props.testimonial.name.charCodeAt(0) % colors.length;
   return colors[colorIndex];
 });
 </script>

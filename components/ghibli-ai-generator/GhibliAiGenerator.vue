@@ -2,9 +2,7 @@
   <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 md:gap-8">
     <!-- Left Column - Controls -->
     <div class="bg-white p-6 rounded-lg border border-gray-200">
-      <div class="flex justify-between items-center mb-6">
-        <h3 class="text-xl font-semibold text-[#3d405b]">Generate Ghibli Image</h3>
-      </div>
+      
 
       <!-- Step 1: Upload Image -->
       <div class="mb-6">
@@ -86,7 +84,7 @@
         </div>
       </div>
 
-      <!-- 在 Generate Button 上方添加错误提示 -->
+      <!-- Error Message -->
       <div v-if="errorMessage" class="mb-4 p-3 bg-red-50 text-red-600 rounded-md text-sm">
         {{ errorMessage }}
       </div>
@@ -96,7 +94,7 @@
         class="w-full bg-[#e07a5f] hover:bg-[#d8603f] text-white py-2 px-4 rounded-md flex items-center justify-center"
         :disabled="!previewUrl || isGenerating"
         :class="{ 'opacity-50 cursor-not-allowed': !previewUrl || isGenerating }"
-        @click="generateImage"
+        @click="handleGenerateClick"
       >
         <template v-if="isGenerating">
           <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4 mr-2 animate-spin">
@@ -125,7 +123,7 @@
     </div>
 
     <!-- Right Column - Preview -->
-    <div class="bg-white p-6 rounded-lg border border-gray-200">
+    <div ref="previewSectionRef" class="bg-white p-6 rounded-lg border border-gray-200">
       <h3 class="text-xl font-semibold mb-4 text-[#3d405b]">Preview</h3>
 
       <div v-if="isGenerating" class="flex flex-col items-center justify-center h-[300px]">
@@ -193,7 +191,7 @@
           <path d="M12.2 6.2 11 5"></path>
         </svg>
         <p class="text-gray-500 mb-4">Your Ghibli-style image will appear here</p>
-        <p class="text-gray-400 text-sm">Upload an image and enter a prompt to get started</p>
+        <p class="text-gray-400 text-sm">Upload an image to get started</p>
       </div>
     </div>
   </div>
@@ -214,6 +212,7 @@ const downloadLink = ref(null);
 const taskId = ref(null);
 const errorMessage = ref(null);
 const pollingInterval = ref(null);
+const previewSectionRef = ref(null);
 
 // 添加使用次数相关的变量
 const MAX_DAILY_USES = 10;
@@ -374,6 +373,24 @@ const checkTaskStatus = async () => {
     progress.value = 0;
     errorMessage.value = 'Network error. Please check your connection.';
   }
+};
+
+const handleGenerateClick = async () => {
+  // 如果是移动端，立即滚动
+  if (window.innerWidth <= 768) {
+    const yOffset = -20;
+    const y = previewSectionRef.value.getBoundingClientRect().top + window.pageYOffset + yOffset;
+    
+    window.scrollTo({
+      top: y,
+      behavior: 'smooth',
+      // 减少滚动时间
+      duration: 500 // 半秒
+    });
+  }
+  
+  // 然后执行生成图片
+  await generateImage();
 };
 
 // 修改 generateImage 方法

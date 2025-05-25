@@ -5,6 +5,8 @@ export default defineNuxtConfig({
   modules: ['@nuxtjs/sitemap'],
   devtools: { enabled: true },
   css: ['~/assets/css/main.css'],
+  // 添加日志配置
+  logLevel: 'warn',
 
   site: {
     url: 'https://ghibliaigenerator.io'
