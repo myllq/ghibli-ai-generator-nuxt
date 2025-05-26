@@ -48,4 +48,11 @@ export default defineNuxtConfig({
   },
 
   compatibilityDate: '2025-04-26',
+
+  // 添加动态路由配置
+  nitro: {
+    prerender: {
+      routes: ['/action-figure-ai']
+    }
+  }
 })

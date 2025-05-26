@@ -79,7 +79,7 @@
       <section class="py-16 bg-[#f8f5f0]">
         <div class="container mx-auto px-4">
           <h2 class="text-3xl font-bold text-center text-[#3d405b] mb-4">How to Use Our Ghibli AI Generator</h2>
-          <HowToSteps :data="content.howTo" />
+          <HowToSection :data="content.howTo" />
         </div>
       </section>
 
@@ -104,7 +104,7 @@
             {{ content.testimonials.description }}
           </p>
           <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            <TestimonialCard
+            <import TestimonialSection
               v-for="testimonial in content.testimonials.items"
               :key="testimonial.name"
               :testimonial="testimonial"
@@ -122,9 +122,7 @@
           <p class="text-center text-gray-600 mb-12 max-w-2xl mx-auto">
             {{ content.faq.description }}
           </p>
-          <div class="max-w-3xl mx-auto">
-            <FaqAccordion :data="content.faq" />
-          </div>
+          <FaqSection :data="content.faq" />
         </div>
       </section>
 
@@ -149,18 +147,17 @@
     <TheFooter @scroll-to="scrollToRef" />
   </div>
 </template>
-
 <script setup>
 import { ref, onMounted } from 'vue';
 import content from '~/content/index.json'
 import HeroCarousel from '~/components/ghibli-ai-generator/HeroCarousel.vue';
 import GhibliAiGenerator from '~/components/ghibli-ai-generator/GhibliAiGenerator.vue';
 import FeatureSection from '~/components/sections/FeatureSection.vue';
-import HowToSteps from '~/components/sections/HowToSteps.vue';
+import HowToSection from '~/components/sections/HowToSection.vue';
 import ExamplesSection from '~/components/sections/ExamplesSection.vue';
 import WhyChooseSection from '~/components/sections/WhyChooseSection.vue';
-import TestimonialCard from '~/components/sections/TestimonialCard.vue';
-import FaqAccordion from '~/components/sections/FaqAccordion.vue';
+import TestimonialSection from '~/components/sections/TestimonialSection.vue';
+import FaqSection from '~/components/sections/FaqSection.vue';
 import TheHeader from '~/components/common/TheHeader.vue';
 import TheFooter from '~/components/common/TheFooter.vue';
 
