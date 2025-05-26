@@ -216,7 +216,7 @@ const errorMessage = ref(null);
 const pollingInterval = ref(null);
 
 // 添加使用次数相关的变量
-const MAX_DAILY_USES = 10;
+const MAX_DAILY_USES = 3;
 
 // 添加下载状态变量
 const isDownloading = ref(false);
