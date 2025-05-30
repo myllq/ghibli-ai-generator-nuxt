@@ -221,8 +221,8 @@ const MAX_DAILY_USES = 3;
 const isDownloading = ref(false);
 
 // API 基础 URL 配置
-const apiBaseUrl = 'http://localhost:8000/api/v1/images/task';
-//const apiBaseUrl = 'https://api.ghibliaigenerator.io/api/v1/images/task';
+//const apiBaseUrl = 'http://localhost:8000/api/v1/images/task';
+const apiBaseUrl = 'https://api.ghibliaigenerator.io/api/v1/images/task';
 
 // 生成32位随机字符串
 const generateRandomString = (length = 32) => {
