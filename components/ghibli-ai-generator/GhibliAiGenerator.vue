@@ -220,6 +220,39 @@ const MAX_DAILY_USES = 3;
 // 添加下载状态变量
 const isDownloading = ref(false);
 
+// API 基础 URL 配置
+const apiBaseUrl = 'http://localhost:8000/api/v1/images/task';
+//const apiBaseUrl = 'https://api.ghibliaigenerator.io/api/v1/images/task';
+
+// 生成32位随机字符串
+const generateRandomString = (length = 32) => {
+  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+  let result = '';
+  const crypto = window.crypto || window.msCrypto;
+  const values = new Uint32Array(length);
+  
+  crypto.getRandomValues(values);
+  
+  for (let i = 0; i < length; i++) {
+    result += chars[values[i] % chars.length];
+  }
+  
+  return result;
+};
+
+// 获取或生成用户ID
+const getUserId = () => {
+  const storageKey = 'ghibli_generator_user_id';
+  let userId = localStorage.getItem(storageKey);
+  
+  if (!userId) {
+    userId = generateRandomString(32);
+    localStorage.setItem(storageKey, userId);
+  }
+  
+  return userId;
+};
+
 // 检查今日使用次数
 const checkDailyLimit = () => {
   const today = new Date().toISOString().split('T')[0];
@@ -277,11 +310,9 @@ const createTask = async () => {
     const formData = new FormData();
     formData.append('file', selectedFile.value);
     formData.append('size', String(selectedRatio.value));
+    formData.append('user_id', getUserId());
 
-    // 测试环境：http://localhost:8000/api/v1/images/task
-    // 生产环境：https://api.ghibliaigenerator.io/api/v1/images/task
-
-    const response = await fetch('https://api.ghibliaigenerator.io/api/v1/images/task', {
+    const response = await fetch(`${apiBaseUrl}`, {
       method: 'POST',
       body: formData
     });
@@ -330,10 +361,8 @@ const createTask = async () => {
 
 const checkTaskStatus = async () => {
   try {
-    // 测试环境：http://localhost:8000/api/v1/images/task?task_id=${taskId.value}
-    // 正式环境：https://api.ghibliaigenerator.io/api/v1/images/task?task_id=${taskId.value}
 
-    const response = await fetch(`https://api.ghibliaigenerator.io/api/v1/images/task?task_id=${taskId.value}`);
+    const response = await fetch(`${apiBaseUrl}?task_id=${taskId.value}`);
     const result = await response.json();
     
     if (result.code === 200) {
