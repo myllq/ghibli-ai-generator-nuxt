@@ -21,6 +21,7 @@
             :src="userInfo.avatar" 
             :alt="userInfo.name"
             class="w-full h-full object-cover"
+            referrerpolicy="no-referrer"
           />
           <span 
             v-else 
