@@ -84,7 +84,7 @@
           <div class="relative">
             <div 
               id="google-login-button"
-              class="w-full h-[40px] mt-4"
+              class="w-full h-[46px] sm:h-[50px] mt-4"
               :class="{ 'opacity-50': isLoading }"
             ></div>
             <div 
@@ -118,7 +118,7 @@
       <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
       </svg>
-      <span>Successfully logged out!</span>
+      <span>{{ successMessage }}</span>
     </div>
   </header>
 </template>
@@ -129,6 +129,7 @@ import { ref, onMounted, watch, nextTick, onUnmounted } from 'vue';
 const showLoginModal = ref(false);
 const userInfo = ref(null);
 const showSuccessToast = ref(false);
+const successMessage = ref('');
 const showDropdown = ref(false);
 const isLoading = ref(false);
 let closeTimeout = null;
@@ -210,6 +211,7 @@ const renderGoogleButton = () => {
             if (data.code === 200) {
               setUserInfo(data.data.user);
               showLoginModal.value = false;
+              successMessage.value = 'Successfully logged in!';
               showSuccessToast.value = true;
               setTimeout(() => {
                 showSuccessToast.value = false;
@@ -236,13 +238,50 @@ const renderGoogleButton = () => {
     window.google.accounts.id.renderButton(buttonContainer, {
       type: 'standard',
       theme: 'outline',
-      size: isMobile ? 'medium' : 'large',
-      text: 'continue_with',
+      size: 'large',
+      shape: 'rectangular',
+      text: 'signin_with',
       width: buttonContainer.offsetWidth,
       locale: 'en-US',
       language: 'en-US',
+      logo_alignment: 'center',
       disabled: isLoading.value,
     });
+
+    const buttonElement = buttonContainer.firstChild;
+    if (buttonElement) {
+      buttonElement.style.borderRadius = '8px';
+      buttonElement.style.boxShadow = '0 1px 2px rgba(0, 0, 0, 0.05)';
+      buttonElement.style.transition = 'all 0.2s ease';
+      buttonElement.style.fontSize = '16px';
+      buttonElement.style.outline = 'none';
+      
+      const textElements = buttonElement.getElementsByTagName('span');
+      for (let element of textElements) {
+        element.style.fontSize = '16px';
+        element.style.outline = 'none';
+      }
+      
+      buttonElement.addEventListener('mouseenter', () => {
+        buttonElement.style.boxShadow = '0 4px 6px rgba(0, 0, 0, 0.05)';
+        buttonElement.style.transform = 'translateY(-1px)';
+      });
+      
+      buttonElement.addEventListener('mouseleave', () => {
+        buttonElement.style.boxShadow = '0 1px 2px rgba(0, 0, 0, 0.05)';
+        buttonElement.style.transform = 'translateY(0)';
+      });
+
+      buttonElement.addEventListener('mousedown', () => {
+        buttonElement.style.transform = 'translateY(0)';
+        buttonElement.style.boxShadow = '0 1px 2px rgba(0, 0, 0, 0.05)';
+      });
+
+      buttonElement.addEventListener('mouseup', () => {
+        buttonElement.style.transform = 'translateY(-1px)';
+        buttonElement.style.boxShadow = '0 4px 6px rgba(0, 0, 0, 0.05)';
+      });
+    }
   }
 };
 
@@ -258,6 +297,7 @@ const handleLogout = async () => {
     if (data.code === 200) {
       userInfo.value = null;
       showDropdown.value = false;
+      successMessage.value = 'Successfully logged out!';
       showSuccessToast.value = true;
       setTimeout(() => {
         showSuccessToast.value = false;
@@ -362,5 +402,29 @@ onUnmounted(() => {
 
 .animate-spin {
   animation: spin 1s linear infinite;
+}
+
+/* 自定义 Google 按钮容器样式 */
+#google-login-button {
+  max-width: 400px;
+  margin: 0 auto;
+}
+
+/* 移除所有按钮的 outline */
+#google-login-button * {
+  outline: none !important;
+  font-size: 16px !important;
+}
+
+/* 移除按钮的焦点样式 */
+#google-login-button *:focus {
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+/* 确保按钮在加载状态下仍然可见 */
+.opacity-50 {
+  opacity: 0.7;
+  pointer-events: none;
 }
 </style>
