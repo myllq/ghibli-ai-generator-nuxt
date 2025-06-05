@@ -2,123 +2,42 @@
   <header class="container mx-auto py-1 px-4 relative z-50">
     <div class="flex justify-between items-center">
       <div class="flex items-center">
-        <div class="relative w-[120px] sm:w-[150px] h-[60px] sm:h-[90px]">
+        <NuxtLink to="/" class="flex items-center">
           <img
             src="/images/ghibli-ai-generator-logo.png"
             alt="Ghibli AI Generator Logo"
-            class="object-contain object-left absolute inset-0 w-full h-full"
+            class="h-8 sm:h-10"
           />
-        </div>
-        <span class="hidden sm:block text-lg sm:text-xl font-bold text-[#3d405b] ml-2">GhibliAIGenerator</span>
+        </NuxtLink>
       </div>
-      <div class="flex items-center gap-4 flex-shrink-0">
-        <div v-if="userInfo" class="relative" @mouseleave="handleMouseLeave">
-          <div 
-            class="w-10 h-10 rounded-full cursor-pointer border-2 border-transparent hover:border-[#e07a5f] overflow-hidden flex items-center justify-center"
-            :style="userInfo.avatar ? {} : { backgroundColor: '#e07a5f' }"
-            @mouseenter="showDropdown = true"
-          >
-            <img 
-              v-if="userInfo.avatar" 
-              :src="userInfo.avatar" 
-              :alt="userInfo.name"
-              class="w-full h-full object-cover"
-              referrerpolicy="no-referrer"
-            />
-            <span 
-              v-else 
-              class="text-white text-lg font-semibold uppercase"
-            >
-              {{ userInfo.email.substring(0, 2) }}
-            </span>
-          </div>
-          <div 
-            v-show="showDropdown"
-            class="absolute right-0 top-full z-[100]"
-          >
-            <div class="h-2"></div>
-            <div class="w-48 bg-white rounded-lg shadow-lg py-2">
-              <div class="px-4 py-3 border-b border-gray-100">
-                <p class="text-sm font-medium text-gray-900">{{ userInfo.name }}</p>
-                <p class="text-xs text-gray-500">{{ userInfo.email }}</p>
-              </div>
-              <button 
-                @click="handleLogout"
-                class="w-full text-left px-4 py-3 text-sm text-gray-700 hover:bg-gray-100"
-              >
-                Sign Out
-              </button>
-            </div>
-          </div>
-        </div>
-        <button 
-          v-else
-          class="bg-[#e07a5f] hover:bg-[#d8603f] text-white px-4 sm:px-6 py-2 rounded-md text-sm sm:text-base whitespace-nowrap flex items-center justify-center min-w-[100px] sm:min-w-[160px]"
-          @click="showLoginModal = true"
-        >
-          <span class="hidden sm:inline">Sign Up — It's Free</span>
-          <span class="sm:hidden">Sign Up</span>
-        </button>
-      </div>
-    </div>
-    <div
-      v-if="showLoginModal"
-      class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4"
-      @click.self="showLoginModal = false"
-    >
-      <div class="bg-white rounded-2xl p-4 sm:p-8 max-w-md w-full shadow-xl transform transition-all mx-4 sm:mx-0">
-        <div class="text-center">
-          <div class="relative w-[120px] sm:w-[150px] h-[60px] sm:h-[90px] mx-auto mb-4 sm:mb-6">
-            <img
-              src="/images/ghibli-ai-generator-logo.png"
-              alt="Ghibli AI Generator Logo"
-              class="object-contain w-full h-full"
-            />
-          </div>
-          <h2 class="text-xl sm:text-2xl font-bold text-[#3d405b] mb-2">
-            Welcome to Ghibli AI Generator
-          </h2>
-          <p class="text-sm sm:text-base text-gray-600 mb-6 sm:mb-8">
-            Sign in to start creating magical Ghibli-style images
-          </p>
-          <div class="relative">
-            <div 
-              id="google-login-button"
-              class="w-full h-[46px] sm:h-[50px] mt-4"
-              :class="{ 'opacity-50': isLoading }"
-            ></div>
-            <div 
-              v-if="isLoading" 
-              class="absolute inset-0 flex items-center justify-center"
-            >
-              <div class="w-5 h-5 border-2 border-[#e07a5f] border-t-transparent rounded-full animate-spin"></div>
-            </div>
-          </div>
-          <p class="mt-4 sm:mt-6 text-xs sm:text-sm text-gray-500">
-            By continuing, you agree to our 
-            <a href="/terms" class="text-[#e07a5f] hover:underline">Terms of Service</a> 
-            and 
-            <a href="/privacy" class="text-[#e07a5f] hover:underline">Privacy Policy</a>
-          </p>
-        </div>
+      <div class="flex items-center space-x-2 sm:space-x-4">
         <button
-          @click="showLoginModal = false"
-          class="absolute top-2 right-2 sm:top-4 sm:right-4 text-gray-400 hover:text-gray-600"
+          class="text-[#3d405b] hover:text-[#e07a5f] text-sm sm:text-base"
+          @click="$emit('scroll-to-generator')"
         >
-          <svg class="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-          </svg>
+          Try Now
         </button>
+        <template v-if="userInfo">
+          <div class="flex items-center">
+            <img
+              v-if="userInfo.avatar"
+              :src="userInfo.avatar"
+              :alt="userInfo.name"
+              class="w-8 h-8 rounded-full"
+            />
+            <span class="ml-2 text-sm sm:text-base text-[#3d405b]">{{ userInfo.name }}</span>
+          </div>
+        </template>
+        <template v-else>
+          <button 
+            class="bg-[#e07a5f] hover:bg-[#d8603f] text-white px-4 sm:px-6 py-2 rounded-md text-sm sm:text-base"
+            @click="$emit('showLogin')"
+          >
+            <span class="hidden sm:inline">Sign Up — It's Free</span>
+            <span class="sm:hidden">Sign Up</span>
+          </button>
+        </template>
       </div>
-    </div>
-    <div
-      v-if="showSuccessToast"
-      class="fixed bottom-4 right-4 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg z-50 flex items-center gap-2"
-    >
-      <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-      </svg>
-      <span>{{ successMessage }}</span>
     </div>
   </header>
 </template>
@@ -161,127 +80,6 @@ const checkLoginStatus = async () => {
     }
   } catch (error) {
     console.error('Failed to check login status:', error);
-  }
-};
-
-// 加载 Google Auth
-const loadGoogleAuth = () => {
-  return new Promise((resolve, reject) => {
-    const script = document.createElement('script');
-    script.src = 'https://accounts.google.com/gsi/client?hl=en';
-    script.async = true;
-    script.defer = true;
-    script.onload = () => {
-      console.log('Google Auth script loaded');
-      resolve();
-    };
-    script.onerror = (error) => {
-      console.error('Failed to load Google Auth script:', error);
-      reject(error);
-    };
-    document.head.appendChild(script);
-  });
-};
-
-// 渲染 Google 登录按钮
-const renderGoogleButton = () => {
-  console.log('Rendering Google button');
-  const buttonContainer = document.getElementById('google-login-button');
-  if (buttonContainer && window.google && window.google.accounts) {
-    window.google.accounts.id.cancel();
-    window.google.accounts.id.initialize({
-      client_id: '60781202032-7crs9ghtvvridgeopuarif5liovemfe6.apps.googleusercontent.com',
-      callback: async (response) => {
-        if (response.credential) {
-          try {
-            isLoading.value = true;
-            const res = await fetch('http://localhost:8000/api/v1/user/login/google', {
-              method: 'POST',
-              credentials: 'include',
-              headers: {
-                'Content-Type': 'application/json',
-              },
-              body: JSON.stringify({
-                token: response.credential,
-                platform: 'ghibli-ai-generator'
-              })
-            });
-
-            const data = await res.json();
-            if (data.code === 200) {
-              setUserInfo(data.data.user);
-              showLoginModal.value = false;
-              successMessage.value = 'Successfully logged in!';
-              showSuccessToast.value = true;
-              setTimeout(() => {
-                showSuccessToast.value = false;
-              }, 3000);
-            } else {
-              throw new Error(data.msg);
-            }
-          } catch (error) {
-            console.error('Login error:', error);
-            alert('Login failed. Please try again.');
-          } finally {
-            isLoading.value = false;
-            renderGoogleButton();
-          }
-        }
-      },
-      ux_mode: 'popup',
-      language: 'en-US',
-    });
-
-    buttonContainer.innerHTML = '';
-
-    const isMobile = window.innerWidth < 640;
-    window.google.accounts.id.renderButton(buttonContainer, {
-      type: 'standard',
-      theme: 'outline',
-      size: 'large',
-      shape: 'rectangular',
-      text: 'signin_with',
-      width: buttonContainer.offsetWidth,
-      locale: 'en-US',
-      language: 'en-US',
-      logo_alignment: 'center',
-      disabled: isLoading.value,
-    });
-
-    const buttonElement = buttonContainer.firstChild;
-    if (buttonElement) {
-      buttonElement.style.borderRadius = '8px';
-      buttonElement.style.boxShadow = '0 1px 2px rgba(0, 0, 0, 0.05)';
-      buttonElement.style.transition = 'all 0.2s ease';
-      buttonElement.style.fontSize = '16px';
-      buttonElement.style.outline = 'none';
-      
-      const textElements = buttonElement.getElementsByTagName('span');
-      for (let element of textElements) {
-        element.style.fontSize = '16px';
-        element.style.outline = 'none';
-      }
-      
-      buttonElement.addEventListener('mouseenter', () => {
-        buttonElement.style.boxShadow = '0 4px 6px rgba(0, 0, 0, 0.05)';
-        buttonElement.style.transform = 'translateY(-1px)';
-      });
-      
-      buttonElement.addEventListener('mouseleave', () => {
-        buttonElement.style.boxShadow = '0 1px 2px rgba(0, 0, 0, 0.05)';
-        buttonElement.style.transform = 'translateY(0)';
-      });
-
-      buttonElement.addEventListener('mousedown', () => {
-        buttonElement.style.transform = 'translateY(0)';
-        buttonElement.style.boxShadow = '0 1px 2px rgba(0, 0, 0, 0.05)';
-      });
-
-      buttonElement.addEventListener('mouseup', () => {
-        buttonElement.style.transform = 'translateY(-1px)';
-        buttonElement.style.boxShadow = '0 4px 6px rgba(0, 0, 0, 0.05)';
-      });
-    }
   }
 };
 
@@ -348,9 +146,23 @@ onUnmounted(() => {
   if (resizeTimeout) clearTimeout(resizeTimeout);
   window.removeEventListener('resize', handleResize);
 });
+
+// 只保留必要的 props 和 emits
+defineProps({
+  userInfo: {
+    type: Object,
+    default: null
+  }
+});
+
+defineEmits(['scroll-to-generator', 'showLogin']);
 </script>
 
 <style scoped>
+.router-link-active {
+  color: #e07a5f;
+}
+
 /* 下拉菜单动画 */
 .absolute {
   transition: opacity 0.2s ease, transform 0.2s ease;

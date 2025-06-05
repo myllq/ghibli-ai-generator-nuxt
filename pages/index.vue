@@ -1,6 +1,10 @@
 <template>
   <div class="min-h-screen bg-[#f8f5f0]">
-    <TheHeader @scroll-to-generator="scrollToRef('generator')" />
+    <TheHeader 
+      :userInfo="userInfo"
+      @scroll-to-generator="scrollToRef('generator')" 
+      @showLogin="showLoginDialog = true" 
+    />
     
     <!-- Main Content -->
     <main>
@@ -147,6 +151,12 @@
     </main>
 
     <TheFooter @scroll-to="scrollToRef" />
+
+    <!-- 登录弹窗 -->
+    <LoginDialog
+      v-model:showLoginDialog="showLoginDialog"
+      @loginSuccess="handleLoginSuccess"
+    />
   </div>
 </template>
 
@@ -163,6 +173,7 @@ import TestimonialSection from '~/components/sections/TestimonialSection.vue';
 import FaqSection from '~/components/sections/FaqSection.vue';
 import TheHeader from '~/components/common/TheHeader.vue';
 import TheFooter from '~/components/common/TheFooter.vue';
+import LoginDialog from '~/components/common/LoginDialog.vue';
 
 // Scroll function
 const scrollToRef = (refName) => {
@@ -171,6 +182,43 @@ const scrollToRef = (refName) => {
     element.scrollIntoView({ behavior: 'smooth' });
   }
 };
+
+// 用户信息状态
+const userInfo = ref(null);
+const showLoginDialog = ref(false);
+
+// 处理登录成功
+const handleLoginSuccess = (userData) => {
+  console.log('Login success, user data:', userData);
+  userInfo.value = {
+    id: userData.id,
+    name: userData.name,
+    email: userData.email,
+    avatar: userData.avatar,
+    // 其他需要的用户信息字段
+  };
+};
+
+// 检查登录状态
+const checkLoginStatus = async () => {
+  try {
+    const res = await fetch('http://localhost:8000/api/v1/user/info', {
+      credentials: 'include',
+    });
+    const data = await res.json();
+    if (data.code === 200) {
+      userInfo.value = data.data;
+      console.log('User info loaded:', userInfo.value);
+    }
+  } catch (error) {
+    console.error('Failed to check login status:', error);
+  }
+};
+
+// 组件挂载时检查登录状态
+onMounted(async () => {
+  await checkLoginStatus();
+});
 
 const jsonLdData = {
   "@context": "https://schema.org",
