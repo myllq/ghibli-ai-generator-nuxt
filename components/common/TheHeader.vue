@@ -96,7 +96,7 @@ const setUserInfo = (userData, userCredits) => {
 // 检查登录状态
 const checkLoginStatus = async () => {
   try {
-    const res = await fetch('http://localhost:8000/api/v1/user/info', {
+    const res = await fetch('https://api.ghibliaigenerator.io/api/v1/user/info', {
       credentials: 'include',
     });
     const data = await res.json();
@@ -140,7 +140,7 @@ const clearCloseTimeout = () => {
 // 处理登出
 const handleLogout = async () => {
   try {
-    const res = await fetch('http://localhost:8000/api/v1/user/logout', {
+    const res = await fetch('https://api.ghibliaigenerator.io/api/v1/user/logout', {
       method: 'POST',
       credentials: 'include',
     });

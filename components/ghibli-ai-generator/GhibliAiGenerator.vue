@@ -213,12 +213,12 @@ const pollingInterval = ref(null);
 const previewSectionRef = ref(null);
 
 // API 基础 URL 配置
-const apiBaseUrl = 'http://localhost:8000/api/v1/images/task';
+const apiBaseUrl = 'https://api.ghibliaigenerator.io/api/v1/images/task';
 
 // 检查用户登录状态和积分
 const checkUserStatus = async () => {
   try {
-    const res = await fetch('http://localhost:8000/api/v1/user/info', {
+    const res = await fetch('https://api.ghibliaigenerator.io/api/v1/user/info', {
       credentials: 'include',
     });
     const data = await res.json();
@@ -251,7 +251,7 @@ const checkUserStatus = async () => {
 // 更新用户积分
 const updateUserCredits = async () => {
   try {
-    const res = await fetch('http://localhost:8000/api/v1/user/info', {
+    const res = await fetch('https://api.ghibliaigenerator.io/api/v1/user/info', {
       credentials: 'include',
     });
     const data = await res.json();

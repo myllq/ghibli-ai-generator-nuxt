@@ -78,7 +78,7 @@ const handleGoogleLogin = async (response) => {
   if (response.credential) {
     try {
       isLoading.value = true;
-      const res = await fetch('http://localhost:8000/api/v1/user/login/google', {
+      const res = await fetch('https://api.ghibliaigenerator.io/api/v1/user/login/google', {
         method: 'POST',
         credentials: 'include',
         headers: {
