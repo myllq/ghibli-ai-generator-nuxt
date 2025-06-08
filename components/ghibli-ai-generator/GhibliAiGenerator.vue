@@ -112,7 +112,7 @@
             <path d="M3 21l9-9"></path>
             <path d="M12.2 6.2 11 5"></path>
           </svg>
-          Generate Image
+          Generate Image (3 Credits)
         </template>
       </button>
 
@@ -224,6 +224,12 @@ const checkUserStatus = async () => {
     const data = await res.json();
     
     if (data.code === 200) {
+      // 更新 header 中的积分显示
+      emit('updateCredits', {
+        user: data.data.user,
+        credits: data.data.credits
+      });
+      
       // 检查积分是否足够
       if (data.data.credits < 3) {
         errorMessage.value = 'Insufficient credits. Please recharge';
@@ -250,7 +256,11 @@ const updateUserCredits = async () => {
     });
     const data = await res.json();
     if (data.code === 200) {
-      // TheHeader 组件会自动更新积分显示
+      // 发送事件更新 header 中的积分显示
+      emit('updateCredits', {
+        user: data.data.user,
+        credits: data.data.credits
+      });
     }
   } catch (error) {
     console.error('Update credits error:', error);
@@ -281,6 +291,8 @@ const createTask = async () => {
     
     if (result.code === 200) {
       taskId.value = result.data.task_id;
+      // 创建任务成功后更新积分
+      await updateUserCredits();
       return true;
     }
     
@@ -336,7 +348,7 @@ const checkTaskStatus = async () => {
           progress.value = 100;
           isGenerating.value = false;
           generatedImage.value = output;
-          // 更新用户积分
+          // 生成成功后更新积分
           await updateUserCredits();
           break;
           
@@ -352,6 +364,8 @@ const checkTaskStatus = async () => {
           } else {
             errorMessage.value = error_msg || 'Generation failed. Please try again';
           }
+          // 生成失败后更新积分
+          await updateUserCredits();
           break;
       }
     }
@@ -360,6 +374,8 @@ const checkTaskStatus = async () => {
     isGenerating.value = false;
     progress.value = 0;
     errorMessage.value = 'Network error. Please check your connection';
+    // 发生错误时也更新积分
+    await updateUserCredits();
   }
 };
 
@@ -473,7 +489,7 @@ const downloadImage = async () => {
 // 添加下载状态变量
 const isDownloading = ref(false);
 
-const emit = defineEmits(['showLogin']);
+const emit = defineEmits(['showLogin', 'updateCredits']);
 
 onMounted(() => {
   // 移除本地存储相关的初始化代码

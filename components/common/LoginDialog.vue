@@ -16,8 +16,8 @@
         <h2 class="text-xl sm:text-2xl font-bold text-[#3d405b] mb-2">
           Welcome to Ghibli AI Generator
         </h2>
-        <p class="text-sm sm:text-base text-gray-600 mb-6 sm:mb-8">
-          Sign in to start creating magical Ghibli-style images
+        <p class="text-sm sm:text-base text-[#e07a5f] mb-6 sm:mb-8">
+          Get 10 free credits on first sign-in!
         </p>
         <div class="relative">
           <div 

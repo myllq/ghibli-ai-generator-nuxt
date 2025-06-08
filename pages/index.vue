@@ -50,7 +50,10 @@
           <p class="text-center text-gray-600 mb-12 max-w-2xl mx-auto">
             Upload your photo and watch the magic happen in seconds.
           </p>
-          <GhibliAiGenerator @showLogin="showLoginDialog = true" />
+          <GhibliAiGenerator 
+            @showLogin="showLoginDialog = true" 
+            @updateCredits="handleCreditsUpdate"
+          />
         </div>
       </section>
 
@@ -189,6 +192,11 @@ const showLoginDialog = ref(false);
 // 处理登录成功
 const handleLoginSuccess = (data) => {
   console.log('Login success, user data:', data);
+  headerRef.value?.handleLoginSuccess(data);
+};
+
+// 处理积分更新
+const handleCreditsUpdate = (data) => {
   headerRef.value?.handleLoginSuccess(data);
 };
 
