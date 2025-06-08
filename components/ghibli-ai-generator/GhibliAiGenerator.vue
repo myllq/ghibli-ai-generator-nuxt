@@ -2,8 +2,6 @@
   <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 md:gap-8">
     <!-- Left Column - Controls -->
     <div class="bg-white p-6 rounded-lg border border-gray-200">
-      
-
       <!-- Step 1: Upload Image -->
       <div class="mb-6">
         <label class="text-lg font-medium mb-2 block">1. Upload Image</label>
@@ -147,14 +145,14 @@
       
       <div v-else-if="generatedImage" class="space-y-4">
         <div class="relative h-[300px] rounded-lg overflow-hidden">
-          <img
-            :src="generatedImage"
+          <img 
+            :src="generatedImage" 
             alt="Generated Ghibli Image"
             class="absolute inset-0 w-full h-full object-contain"
           />
         </div>
         <div class="flex justify-center">
-          <button 
+          <button
             class="bg-[#81b29a] hover:bg-[#6a9d87] text-white py-2 px-4 rounded-md w-full flex items-center justify-center"
             :disabled="isDownloading"
             :class="{ 'opacity-75 cursor-wait': isDownloading }"
@@ -177,7 +175,7 @@
           </button>
         </div>
       </div>
-      
+
       <div v-else class="border-2 border-dashed border-gray-300 rounded-lg p-12 text-center h-[300px] flex flex-col items-center justify-center">
         <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-12 w-12 mx-auto mb-4 text-gray-400">
           <path d="M15 4V2"></path>
@@ -214,67 +212,189 @@ const errorMessage = ref(null);
 const pollingInterval = ref(null);
 const previewSectionRef = ref(null);
 
-// 添加使用次数相关的变量
-const MAX_DAILY_USES = 3;
-
-// 添加下载状态变量
-const isDownloading = ref(false);
-
 // API 基础 URL 配置
-//const apiBaseUrl = 'http://localhost:8000/api/v1/images/task';
-const apiBaseUrl = 'https://api.ghibliaigenerator.io/api/v1/images/task';
+const apiBaseUrl = 'http://localhost:8000/api/v1/images/task';
 
-// 生成32位随机字符串
-const generateRandomString = (length = 32) => {
-  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-  let result = '';
-  const crypto = window.crypto || window.msCrypto;
-  const values = new Uint32Array(length);
-  
-  crypto.getRandomValues(values);
-  
-  for (let i = 0; i < length; i++) {
-    result += chars[values[i] % chars.length];
+// 检查用户登录状态和积分
+const checkUserStatus = async () => {
+  try {
+    const res = await fetch('http://localhost:8000/api/v1/user/info', {
+      credentials: 'include',
+    });
+    const data = await res.json();
+    
+    if (data.code === 200) {
+      // 检查积分是否足够
+      if (data.data.credits < 3) {
+        errorMessage.value = 'Insufficient credits. Please recharge';
+        return false;
+      }
+      return true;
+    } else {
+      emit('showLogin');
+      errorMessage.value = 'Please login to continue';
+      return false;
+    }
+  } catch (error) {
+    console.error('Check user status error:', error);
+    errorMessage.value = 'Network error. Please check your connection';
+    return false;
   }
-  
-  return result;
 };
 
-// 获取或生成用户ID
-const getUserId = () => {
-  const storageKey = 'ghibli_generator_user_id';
-  let userId = localStorage.getItem(storageKey);
-  
-  if (!userId) {
-    userId = generateRandomString(32);
-    localStorage.setItem(storageKey, userId);
+// 更新用户积分
+const updateUserCredits = async () => {
+  try {
+    const res = await fetch('http://localhost:8000/api/v1/user/info', {
+      credentials: 'include',
+    });
+    const data = await res.json();
+    if (data.code === 200) {
+      // TheHeader 组件会自动更新积分显示
+    }
+  } catch (error) {
+    console.error('Update credits error:', error);
   }
-  
-  return userId;
 };
 
-// 检查今日使用次数
-const checkDailyLimit = () => {
-  const today = new Date().toISOString().split('T')[0];
-  const usageKey = `ghibli_daily_usage_${today}`;
-  
-  // 获取今日使用次数
-  let dailyUsage = localStorage.getItem(usageKey);
-  if (!dailyUsage) {
-    localStorage.setItem(usageKey, '0');
-    return 0;
+const createTask = async () => {
+  try {
+    errorMessage.value = null;
+    
+    // 先检查登录状态和积分
+    const canProceed = await checkUserStatus();
+    if (!canProceed) {
+      return false;
+    }
+    
+    const formData = new FormData();
+    formData.append('file', selectedFile.value);
+    formData.append('size', String(selectedRatio.value));
+
+    const response = await fetch(apiBaseUrl, {
+      method: 'POST',
+      credentials: 'include',
+      body: formData
+    });
+    
+    const result = await response.json();
+    
+    if (result.code === 200) {
+      taskId.value = result.data.task_id;
+      return true;
+    }
+    
+    // Handle error states
+    switch (result.code) {
+      case 401:
+        errorMessage.value = 'Authentication failed. Please login again';
+        emit('showLogin');
+        break;
+      case 402:
+        errorMessage.value = 'Insufficient credits. Please recharge';
+        break;
+      case 422:
+        errorMessage.value = 'Invalid parameters. Please check your input';
+        break;
+      case 429:
+        errorMessage.value = 'Too many requests. Please try again later';
+        break;
+      case 455:
+        errorMessage.value = 'System maintenance. Please try again later';
+        break;
+      case 505:
+        errorMessage.value = 'This feature is temporarily unavailable';
+        break;
+      default:
+        errorMessage.value = 'Failed to create task. Please try again';
+    }
+    return false;
+  } catch (error) {
+    console.error('Create task error:', error);
+    errorMessage.value = 'Network error. Please check your connection';
+    return false;
   }
-  
-  return parseInt(dailyUsage);
 };
 
-// 增加使用次数
-const incrementDailyUsage = () => {
-  const today = new Date().toISOString().split('T')[0];
-  const usageKey = `ghibli_daily_usage_${today}`;
+const checkTaskStatus = async () => {
+  try {
+    const response = await fetch(`${apiBaseUrl}?task_id=${taskId.value}`, {
+      credentials: 'include'
+    });
+    const result = await response.json();
+    
+    if (result.code === 200) {
+      const { progress: taskProgress, status, output, error_code, error_msg } = result.data;
+      
+      switch (status) {
+        case 'GENERATING':
+          progress.value = Math.round(parseFloat(taskProgress) * 100);
+          pollingInterval.value = setTimeout(checkTaskStatus, 5000);
+          break;
+          
+        case 'SUCCESS':
+          progress.value = 100;
+          isGenerating.value = false;
+          generatedImage.value = output;
+          // 更新用户积分
+          await updateUserCredits();
+          break;
+          
+        case 'CREATE_TASK_FAILED':
+        case 'GENERATE_FAILED':
+          isGenerating.value = false;
+          progress.value = 0;
+          
+          if (error_code === 400) {
+            errorMessage.value = 'Content violation detected';
+          } else if (error_code === 451) {
+            errorMessage.value = 'Failed to download image';
+          } else {
+            errorMessage.value = error_msg || 'Generation failed. Please try again';
+          }
+          break;
+      }
+    }
+  } catch (error) {
+    console.error('Check task status error:', error);
+    isGenerating.value = false;
+    progress.value = 0;
+    errorMessage.value = 'Network error. Please check your connection';
+  }
+};
+
+const handleGenerateClick = async () => {
+  // 如果是移动端，立即滚动
+  if (window.innerWidth <= 768) {
+    const yOffset = -20;
+    const y = previewSectionRef.value.getBoundingClientRect().top + window.pageYOffset + yOffset;
+    
+    window.scrollTo({
+      top: y,
+      behavior: 'smooth',
+      duration: 500
+    });
+  }
   
-  let currentUsage = checkDailyLimit();
-  localStorage.setItem(usageKey, (currentUsage + 1).toString());
+  // 执行生成图片
+  await generateImage();
+};
+
+const generateImage = async () => {
+  if (!previewUrl.value) return;
+  
+  isGenerating.value = true;
+  progress.value = 0;
+  errorMessage.value = null;
+
+  const success = await createTask();
+  
+  if (success) {
+    // 立即进行第一次查询
+    checkTaskStatus();
+  } else {
+    isGenerating.value = false;
+  }
 };
 
 const handleFileChange = (e) => {
@@ -303,152 +423,6 @@ const handleDrop = (e) => {
   }
 };
 
-const createTask = async () => {
-  try {
-    errorMessage.value = null;
-    
-    const formData = new FormData();
-    formData.append('file', selectedFile.value);
-    formData.append('size', String(selectedRatio.value));
-    formData.append('user_id', getUserId());
-
-    const response = await fetch(`${apiBaseUrl}`, {
-      method: 'POST',
-      body: formData
-    });
-    
-    const result = await response.json();
-    
-    if (result.code === 200) {
-      taskId.value = result.data.task_id;
-      return true;
-    }
-    
-    // Handle error states
-    switch (result.code) {
-      case 401:
-        errorMessage.value = 'Authentication failed. Please log in again.';
-        break;
-      case 402:
-        errorMessage.value = 'Insufficient credits.';
-        break;
-      case 422:
-        errorMessage.value = 'Invalid parameters. Please check your input.';
-        break;
-      case 429:
-        if (result.msg?.includes('daily limit')) {
-          errorMessage.value = 'Daily limit reached. Please try again tomorrow.';
-        } else {
-          errorMessage.value = 'Too many requests. Please try again later.';
-        }
-        break;
-      case 455:
-        errorMessage.value = 'System maintenance in progress. Please try again later.';
-        break;
-      case 505:
-        errorMessage.value = 'This feature is currently disabled.';
-        break;
-      default:
-        errorMessage.value = 'Failed to create task. Please try again.';
-    }
-    return false;
-  } catch (error) {
-    console.error('Create task error:', error);
-    errorMessage.value = 'Network error. Please check your connection.';
-    return false;
-  }
-};
-
-const checkTaskStatus = async () => {
-  try {
-
-    const response = await fetch(`${apiBaseUrl}?task_id=${taskId.value}`);
-    const result = await response.json();
-    
-    if (result.code === 200) {
-      const { progress: taskProgress, status, output, error_code, error_msg } = result.data;
-      
-      switch (status) {
-        case 'GENERATING':
-          progress.value = Math.round(parseFloat(taskProgress) * 100);
-          // Query again after 5 seconds if still generating
-          pollingInterval.value = setTimeout(checkTaskStatus, 5000);
-          break;
-          
-        case 'SUCCESS':
-          progress.value = 100;
-          isGenerating.value = false;
-          generatedImage.value = output;
-          break;
-          
-        case 'CREATE_TASK_FAILED':
-        case 'GENERATE_FAILED':
-          isGenerating.value = false;
-          progress.value = 0;
-          
-          if (error_code === 400) {
-            errorMessage.value = 'Content violation detected.';
-          } else if (error_code === 451) {
-            errorMessage.value = 'Failed to download image.';
-          } else {
-            errorMessage.value = error_msg || 'Generation failed. Please try again.';
-          }
-          break;
-      }
-    }
-  } catch (error) {
-    console.error('Check task status error:', error);
-    isGenerating.value = false;
-    progress.value = 0;
-    errorMessage.value = 'Network error. Please check your connection.';
-  }
-};
-
-const handleGenerateClick = async () => {
-  // 如果是移动端，立即滚动
-  if (window.innerWidth <= 768) {
-    const yOffset = -20;
-    const y = previewSectionRef.value.getBoundingClientRect().top + window.pageYOffset + yOffset;
-    
-    window.scrollTo({
-      top: y,
-      behavior: 'smooth',
-      // 减少滚动时间
-      duration: 500 // 半秒
-    });
-  }
-  
-  // 然后执行生成图片
-  await generateImage();
-};
-
-// 修改 generateImage 方法
-const generateImage = async () => {
-  if (!previewUrl.value) return;
-  
-  // 检查使用次数限制
-  const currentUsage = checkDailyLimit();
-  if (currentUsage >= MAX_DAILY_USES) {
-    errorMessage.value = 'Daily limit reached. Please try again tomorrow.';
-    return;
-  }
-  
-  isGenerating.value = true;
-  progress.value = 0;
-  errorMessage.value = null;
-
-  const success = await createTask();
-  
-  if (success) {
-    // 增加使用次数
-    incrementDailyUsage();
-    // 立即进行第一次查询
-    checkTaskStatus();
-  } else {
-    isGenerating.value = false;
-  }
-};
-
 const resetGenerator = () => {
   selectedFile.value = null;
   previewUrl.value = null;
@@ -458,7 +432,7 @@ const resetGenerator = () => {
   taskId.value = null;
   
   if (pollingInterval.value) {
-    clearTimeout(pollingInterval.value); // 改用 clearTimeout
+    clearTimeout(pollingInterval.value);
     pollingInterval.value = null;
   }
 };
@@ -496,18 +470,13 @@ const downloadImage = async () => {
   }
 };
 
-// 添加剩余次数显示
-const remainingUses = ref(MAX_DAILY_USES);
+// 添加下载状态变量
+const isDownloading = ref(false);
 
-// 更新剩余次数显示
-const updateRemainingUses = () => {
-  const currentUsage = checkDailyLimit();
-  remainingUses.value = Math.max(0, MAX_DAILY_USES - currentUsage);
-};
+const emit = defineEmits(['showLogin']);
 
-// 组件挂载时更新剩余次数
 onMounted(() => {
-  updateRemainingUses();
+  // 移除本地存储相关的初始化代码
 });
 </script>
 

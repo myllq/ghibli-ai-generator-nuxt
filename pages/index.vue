@@ -50,7 +50,7 @@
           <p class="text-center text-gray-600 mb-12 max-w-2xl mx-auto">
             Upload your photo and watch the magic happen in seconds.
           </p>
-          <GhibliAiGenerator />
+          <GhibliAiGenerator @showLogin="showLoginDialog = true" />
         </div>
       </section>
 
