@@ -122,7 +122,7 @@ const renderGoogleButton = () => {
 
   try {
     window.google.accounts.id.initialize({
-      client_id: '60781202032-7crs9ghtvvridgeopuarif5liovemfe6.apps.googleusercontent.com',
+      client_id: '207250634858-jl5b9kt3ialap4h3b8itqliae5cs65u6.apps.googleusercontent.com',
       callback: handleGoogleLogin,
       ux_mode: 'popup',
       auto_select: false,
