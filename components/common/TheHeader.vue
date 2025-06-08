@@ -6,26 +6,59 @@
           <img
             src="/images/ghibli-ai-generator-logo.png"
             alt="Ghibli AI Generator Logo"
-            class="h-8 sm:h-10"
+            class="w-[150px] h-[90px] object-contain"
           />
         </NuxtLink>
       </div>
       <div class="flex items-center space-x-2 sm:space-x-4">
-        <button
-          class="text-[#3d405b] hover:text-[#e07a5f] text-sm sm:text-base"
-          @click="$emit('scroll-to-generator')"
-        >
-          Try Now
-        </button>
         <template v-if="userInfo">
-          <div class="flex items-center">
-            <img
-              v-if="userInfo.avatar"
-              :src="userInfo.avatar"
-              :alt="userInfo.name"
-              class="w-8 h-8 rounded-full"
-            />
-            <span class="ml-2 text-sm sm:text-base text-[#3d405b]">{{ userInfo.name }}</span>
+          <!-- Credits Display -->
+          <div class="flex items-center border border-[#e07a5f] rounded-full px-3 py-1">
+            <img src="/images/credits.png" alt="Credits" class="w-4 h-4 mr-1" />
+            <span class="text-[#e07a5f] font-medium">{{ credits }}</span>
+          </div>
+          <!-- User Avatar with Dropdown -->
+          <div class="relative">
+            <button
+              class="flex items-center"
+              @mouseenter="showDropdown = true"
+              @mouseleave="handleMouseLeave"
+            >
+              <img
+                v-if="userInfo.avatar"
+                :src="userInfo.avatar"
+                :alt="userInfo.name || userInfo.email"
+                class="w-8 h-8 rounded-full object-cover border border-gray-200"
+                @error="handleAvatarError"
+                ref="avatarImg"
+                crossorigin="anonymous"
+                referrerpolicy="no-referrer"
+              />
+              <div 
+                v-else
+                class="w-8 h-8 rounded-full bg-[#e07a5f] flex items-center justify-center text-white font-medium"
+                :title="userInfo.email"
+              >
+                {{ getInitials(userInfo.email) }}
+              </div>
+            </button>
+            <!-- Dropdown Menu -->
+            <div
+              v-if="showDropdown"
+              class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1"
+              @mouseenter="clearCloseTimeout"
+              @mouseleave="handleMouseLeave"
+            >
+              <div class="px-4 py-2 text-sm text-gray-700 border-b border-gray-100">
+                {{ userInfo.name || userInfo.email }}
+              </div>
+              <button
+                class="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                @click="handleLogout"
+              >
+                Log Out
+              </button>
+            </div>
           </div>
         </template>
         <template v-else>
@@ -47,25 +80,17 @@ import { ref, onMounted, watch, nextTick, onUnmounted } from 'vue';
 
 const showLoginModal = ref(false);
 const userInfo = ref(null);
-const showSuccessToast = ref(false);
-const successMessage = ref('');
+const credits = ref(0);
 const showDropdown = ref(false);
 const isLoading = ref(false);
 let closeTimeout = null;
 
 // 统一处理用户信息
-const setUserInfo = (userData) => {
-  userInfo.value = {
-    id: userData.id,
-    email: userData.email,
-    name: userData.name,
-    avatar: userData.avatar,
-    platform: userData.platform,
-    provider: userData.provider,
-    provider_id: userData.provider_id,
-    created_at: userData.created_at,
-    updated_at: userData.updated_at
-  };
+const setUserInfo = (userData, userCredits) => {
+  if (userData && typeof userData === 'object') {
+    userInfo.value = userData;
+    credits.value = userCredits;
+  }
 };
 
 // 检查登录状态
@@ -76,10 +101,39 @@ const checkLoginStatus = async () => {
     });
     const data = await res.json();
     if (data.code === 200) {
-      setUserInfo(data.data);
+      setUserInfo(data.data.user, data.data.credits);
     }
   } catch (error) {
     console.error('Failed to check login status:', error);
+  }
+};
+
+// 获取邮箱前两位字符
+const getInitials = (email) => {
+  if (!email) return '';
+  return email.substring(0, 2).toUpperCase();
+};
+
+// 修改头像错误处理
+const avatarImg = ref(null);
+const handleAvatarError = () => {
+  if (avatarImg.value) {
+    avatarImg.value.style.display = 'none';
+  }
+};
+
+// 处理鼠标离开事件
+const handleMouseLeave = () => {
+  closeTimeout = setTimeout(() => {
+    showDropdown.value = false;
+  }, 100);
+};
+
+// 清除关闭定时器
+const clearCloseTimeout = () => {
+  if (closeTimeout) {
+    clearTimeout(closeTimeout);
+    closeTimeout = null;
   }
 };
 
@@ -94,12 +148,8 @@ const handleLogout = async () => {
     const data = await res.json();
     if (data.code === 200) {
       userInfo.value = null;
+      credits.value = 0;
       showDropdown.value = false;
-      successMessage.value = 'Successfully logged out!';
-      showSuccessToast.value = true;
-      setTimeout(() => {
-        showSuccessToast.value = false;
-      }, 3000);
     } else {
       throw new Error(data.msg);
     }
@@ -109,53 +159,27 @@ const handleLogout = async () => {
   }
 };
 
-// 处理鼠标离开事件
-const handleMouseLeave = () => {
-  closeTimeout = setTimeout(() => {
-    showDropdown.value = false;
-  }, 100);
-};
-
-// 监听弹窗显示状态
-watch(showLoginModal, async (newValue) => {
-  if (newValue) {
-    await nextTick();
-    await loadGoogleAuth();
-    renderGoogleButton();
+// 添加登录成功的处理函数
+const handleLoginSuccess = (data) => {
+  if (data && data.user) {
+    setUserInfo(data.user, data.credits);
   }
-});
-
-// 监听窗口大小变化
-let resizeTimeout;
-const handleResize = () => {
-  clearTimeout(resizeTimeout);
-  resizeTimeout = setTimeout(() => {
-    if (showLoginModal.value) {
-      renderGoogleButton();
-    }
-  }, 200);
 };
 
 onMounted(async () => {
   await checkLoginStatus();
-  window.addEventListener('resize', handleResize);
 });
 
 onUnmounted(() => {
   if (closeTimeout) clearTimeout(closeTimeout);
-  if (resizeTimeout) clearTimeout(resizeTimeout);
-  window.removeEventListener('resize', handleResize);
-});
-
-// 只保留必要的 props 和 emits
-defineProps({
-  userInfo: {
-    type: Object,
-    default: null
-  }
 });
 
 defineEmits(['scroll-to-generator', 'showLogin']);
+
+// 导出 handleLoginSuccess 函数
+defineExpose({
+  handleLoginSuccess
+});
 </script>
 
 <style scoped>
@@ -180,63 +204,14 @@ defineEmits(['scroll-to-generator', 'showLogin']);
   pointer-events: auto;
 }
 
-/* 成功提示动画 */
-@keyframes slideIn {
-  from {
-    transform: translateY(100%);
-    opacity: 0;
-  }
-  to {
-    transform: translateY(0);
-    opacity: 1;
-  }
+/* 添加头像加载过渡效果 */
+.rounded-full {
+  transition: all 0.3s ease;
 }
 
-.fixed.bottom-4 {
-  animation: slideIn 0.3s ease;
-}
-
-/* 添加移动端过渡动画 */
-@media (max-width: 640px) {
-  .transform {
-    transform-origin: bottom;
-  }
-}
-
-@keyframes spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
-}
-
-.animate-spin {
-  animation: spin 1s linear infinite;
-}
-
-/* 自定义 Google 按钮容器样式 */
-#google-login-button {
-  max-width: 400px;
-  margin: 0 auto;
-}
-
-/* 移除所有按钮的 outline */
-#google-login-button * {
-  outline: none !important;
-  font-size: 16px !important;
-}
-
-/* 移除按钮的焦点样式 */
-#google-login-button *:focus {
-  outline: none !important;
-  box-shadow: none !important;
-}
-
-/* 确保按钮在加载状态下仍然可见 */
-.opacity-50 {
-  opacity: 0.7;
-  pointer-events: none;
+/* 添加文字头像的样式 */
+.bg-[#e07a5f] {
+  font-size: 14px;
+  letter-spacing: 0.5px;
 }
 </style>

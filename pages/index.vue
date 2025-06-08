@@ -1,7 +1,7 @@
 <template>
   <div class="min-h-screen bg-[#f8f5f0]">
     <TheHeader 
-      :userInfo="userInfo"
+      ref="headerRef"
       @scroll-to-generator="scrollToRef('generator')" 
       @showLogin="showLoginDialog = true" 
     />
@@ -183,41 +183,18 @@ const scrollToRef = (refName) => {
   }
 };
 
-// 用户信息状态
-const userInfo = ref(null);
+const headerRef = ref(null);
 const showLoginDialog = ref(false);
 
 // 处理登录成功
-const handleLoginSuccess = (userData) => {
-  console.log('Login success, user data:', userData);
-  userInfo.value = {
-    id: userData.id,
-    name: userData.name,
-    email: userData.email,
-    avatar: userData.avatar,
-    // 其他需要的用户信息字段
-  };
+const handleLoginSuccess = (data) => {
+  console.log('Login success, user data:', data);
+  headerRef.value?.handleLoginSuccess(data);
 };
 
-// 检查登录状态
-const checkLoginStatus = async () => {
-  try {
-    const res = await fetch('http://localhost:8000/api/v1/user/info', {
-      credentials: 'include',
-    });
-    const data = await res.json();
-    if (data.code === 200) {
-      userInfo.value = data.data;
-      console.log('User info loaded:', userInfo.value);
-    }
-  } catch (error) {
-    console.error('Failed to check login status:', error);
-  }
-};
-
-// 组件挂载时检查登录状态
+// 移除重复的检查登录状态
 onMounted(async () => {
-  await checkLoginStatus();
+  // 不需要重复检查登录状态，因为 TheHeader 组件会自己检查
 });
 
 const jsonLdData = {

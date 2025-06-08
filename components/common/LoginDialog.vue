@@ -6,7 +6,7 @@
   >
     <div class="bg-white rounded-2xl p-4 sm:p-8 max-w-md w-full shadow-xl transform transition-all mx-4 sm:mx-0">
       <div class="text-center">
-        <div class="relative w-[120px] sm:w-[150px] h-[60px] sm:h-[90px] mx-auto mb-4 sm:mb-6">
+        <div class="relative w-[150px] h-[90px] mx-auto mb-4 sm:mb-6">
           <img
             src="/images/ghibli-ai-generator-logo.png"
             alt="Ghibli AI Generator Logo"
@@ -22,15 +22,24 @@
         <div class="relative">
           <div 
             id="google-login-button"
-            class="w-full h-[46px] sm:h-[50px] mt-4"
-            :class="{ 'invisible': isLoading }"
+            class="hidden"
           ></div>
-          <div 
-            v-if="isLoading" 
-            class="absolute inset-0 flex items-center justify-center bg-white"
+          <button
+            class="w-full h-[46px] sm:h-[50px] mt-4 border border-gray-300 rounded-md px-4 py-2 flex items-center justify-center gap-2 hover:bg-gray-50 transition-colors relative"
+            @click="handleGoogleButtonClick"
+            :disabled="isLoading"
           >
-            <div class="w-6 h-6 border-2 border-[#e07a5f] border-t-transparent rounded-full animate-spin"></div>
-          </div>
+            <div class="flex items-center justify-center gap-2">
+              <img src="/images/google-logo.png" alt="Google" class="w-6 h-6" />
+              <span class="text-gray-600 font-roboto text-base">Sign in with Google</span>
+            </div>
+            <div 
+              v-if="isLoading" 
+              class="absolute inset-0 flex items-center justify-center bg-white/80 z-10 rounded-md"
+            >
+              <div class="w-6 h-6 border-2 border-[#e07a5f] border-t-transparent rounded-full animate-spin"></div>
+            </div>
+          </button>
         </div>
         <p class="mt-4 sm:mt-6 text-xs sm:text-sm text-gray-500">
           By continuing, you agree to our 
@@ -90,7 +99,7 @@ const handleGoogleLogin = async (response) => {
       }
     } catch (error) {
       console.error('Login error:', error);
-      alert('Login failed. Please try again.');
+      alert('登录失败，请重试');
     } finally {
       isLoading.value = false;
     }
@@ -198,18 +207,29 @@ const loadGoogleAuth = () => {
     return Promise.resolve();
   }
 
-  // 提前创建 script 标签
-  const script = document.createElement('script');
-  script.src = 'https://accounts.google.com/gsi/client';
-  script.async = true;
-  script.defer = true;
-  document.head.appendChild(script);
-
-  return new Promise((resolve) => {
+  return new Promise((resolve, reject) => {
+    const script = document.createElement('script');
+    script.src = 'https://accounts.google.com/gsi/client';
+    script.async = true;
+    script.defer = true;
+    
+    // 添加超时处理
+    const timeout = setTimeout(() => {
+      reject(new Error('加载超时'));
+    }, 10000); // 10秒超时
+    
     script.onload = () => {
+      clearTimeout(timeout);
       console.log('Google Auth script loaded');
       resolve();
     };
+    
+    script.onerror = () => {
+      clearTimeout(timeout);
+      reject(new Error('加载失败'));
+    };
+    
+    document.head.appendChild(script);
   });
 };
 
@@ -220,6 +240,17 @@ const initGoogleAuth = async () => {
     renderGoogleButton();
   } catch (error) {
     console.error('Failed to initialize Google Auth:', error);
+  }
+};
+
+// 添加点击处理方法
+const handleGoogleButtonClick = () => {
+  const googleButton = document.getElementById('google-login-button')?.querySelector('div[role="button"]');
+  if (googleButton) {
+    googleButton.click();
+  } else {
+    console.error('Google button not found');
+    alert('Login button failed to load. Please check your network!');
   }
 };
 
