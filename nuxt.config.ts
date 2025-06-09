@@ -44,7 +44,7 @@ export default defineNuxtConfig({
   runtimeConfig: {
     public: {
       // 设置为 true 使用开发环境，false 使用生产环境
-      apiBaseUrl: true  // 在这里改 true/false 来切换环境
+      apiBaseUrl: false  // 在这里改 true/false 来切换环境
         ? 'http://localhost:8000'
         : 'https://api.ghibliaigenerator.io',
       apiEndpoints: {
