@@ -51,7 +51,8 @@ export default defineNuxtConfig({
         user: {
           login: '/api/v1/user/login/google',
           info: '/api/v1/user/info',
-          logout: '/api/v1/user/logout'
+          logout: '/api/v1/user/logout',
+          share: '/api/v1/user/share',
         },
         images: {
           task: '/api/v1/images/task'
