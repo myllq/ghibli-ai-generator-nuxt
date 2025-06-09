@@ -151,9 +151,9 @@
             class="absolute inset-0 w-full h-full object-contain"
           />
         </div>
-        <div class="flex justify-center">
+        <div class="flex justify-center gap-4">
           <button
-            class="bg-[#81b29a] hover:bg-[#6a9d87] text-white py-2 px-4 rounded-md w-full flex items-center justify-center"
+            class="bg-[#e07a5f] hover:bg-[#d8603f] text-white py-2 px-4 rounded-md w-1/2 flex items-center justify-center"
             :disabled="isDownloading"
             :class="{ 'opacity-75 cursor-wait': isDownloading }"
             @click="downloadImage"
@@ -162,7 +162,7 @@
               <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4 mr-2 animate-spin">
                 <path d="M21 12a9 9 0 1 1-6.219-8.56"></path>
               </svg>
-              Downloading...
+              <span class="text-sm sm:text-base">Downloading...</span>
             </template>
             <template v-else>
               <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4 mr-2">
@@ -170,8 +170,21 @@
                 <polyline points="7 10 12 15 17 10"></polyline>
                 <line x1="12" y1="15" x2="12" y2="3"></line>
               </svg>
-              Download
+              <span class="text-[14px] sm:text-base">Download</span>
             </template>
+          </button>
+          <button
+            class="bg-[#81b29a] hover:bg-[#6a9d87] text-white py-2 px-4 rounded-md w-1/2 flex items-center justify-center"
+            @click="handleShareClick"
+            :disabled="hasSharedToday"
+            :class="{ 'opacity-50 cursor-not-allowed': hasSharedToday }"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4 mr-2">
+              <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"></path>
+              <polyline points="16 6 12 2 8 6"></polyline>
+              <line x1="12" y1="2" x2="12" y2="15"></line>
+            </svg>
+            <span class="text-[14px] sm:text-base whitespace-nowrap">Share (+100)</span>
           </button>
         </div>
       </div>
@@ -190,6 +203,94 @@
         </svg>
         <p class="text-gray-500 mb-4">Your Ghibli-style image will appear here</p>
         <p class="text-gray-400 text-sm">Upload an image to get started</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Share Modal -->
+  <div v-if="showShareModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 px-4">
+    <div class="bg-white rounded-lg max-w-lg w-full p-6 relative">
+      <!-- Close Button -->
+      <button 
+        class="absolute top-4 right-4 text-gray-500 hover:text-gray-700"
+        @click="showShareModal = false"
+      >
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="18" y1="6" x2="6" y2="18"></line>
+          <line x1="6" y1="6" x2="18" y2="18"></line>
+        </svg>
+      </button>
+
+      <!-- Modal Content -->
+      <h3 class="text-xl font-semibold mb-4 text-[#3d405b]">Share and Earn Credits</h3>
+      <p class="text-gray-600 mb-6">Share your creation on social media and earn 10-100 credits!</p>
+
+      <!-- Social Media Icons -->
+      <div class="grid grid-cols-3 gap-4 mb-6">
+        <a href="#" class="flex flex-col items-center p-3 rounded-lg hover:bg-gray-50">
+          <img src="/images/social/reddit.png" alt="Reddit" class="w-8 h-8 mb-2" />
+          <span class="text-sm text-gray-600">Reddit</span>
+        </a>
+        <a href="#" class="flex flex-col items-center p-3 rounded-lg hover:bg-gray-50">
+          <img src="/images/social/facebook.png" alt="Facebook" class="w-8 h-8 mb-2" />
+          <span class="text-sm text-gray-600">Facebook</span>
+        </a>
+        <a href="#" class="flex flex-col items-center p-3 rounded-lg hover:bg-gray-50">
+          <img src="/images/social/instagram.png" alt="Instagram" class="w-8 h-8 mb-2" />
+          <span class="text-sm text-gray-600">Instagram</span>
+        </a>
+        <a href="#" class="flex flex-col items-center p-3 rounded-lg hover:bg-gray-50">
+          <img src="/images/social/twitter.png" alt="Twitter" class="w-8 h-8 mb-2" />
+          <span class="text-sm text-gray-600">Twitter</span>
+        </a>
+        <a href="#" class="flex flex-col items-center p-3 rounded-lg hover:bg-gray-50">
+          <img src="/images/social/youtube.png" alt="YouTube" class="w-8 h-8 mb-2" />
+          <span class="text-sm text-gray-600">YouTube</span>
+        </a>
+        <a href="#" class="flex flex-col items-center p-3 rounded-lg hover:bg-gray-50">
+          <img src="/images/social/tiktok.png" alt="TikTok" class="w-8 h-8 mb-2" />
+          <span class="text-sm text-gray-600">TikTok</span>
+        </a>
+      </div>
+
+      <!-- Copy Link -->
+      <div class="mb-6">
+        <div class="flex gap-2">
+          <input
+            type="text"
+            :value="generatedImage"
+            readonly
+            class="flex-1 border border-gray-300 rounded-md px-3 py-2 text-sm"
+          />
+          <button
+            class="bg-gray-100 hover:bg-gray-200 px-4 py-2 rounded-md"
+            @click="copyImageLink"
+          >
+            Copy
+          </button>
+        </div>
+      </div>
+
+      <!-- Submit URL Form -->
+      <div class="space-y-4">
+        <div class="flex gap-2">
+          <input
+            v-model="shareUrl"
+            type="text"
+            placeholder="Input post url"
+            class="flex-1 min-w-0 border border-gray-300 rounded-md px-3 py-2"
+          />
+          <button
+            class="bg-[#81b29a] hover:bg-[#6a9d87] text-white px-4 sm:px-6 py-2 rounded-md whitespace-nowrap"
+            :disabled="isSubmitting || hasSharedToday"
+            :class="{ 'opacity-50 cursor-not-allowed': isSubmitting || hasSharedToday }"
+            @click="submitShare"
+          >
+            <span class="text-[14px] sm:text-base">{{ isSubmitting ? 'Submitting...' : 'Submit' }}</span>
+          </button>
+        </div>
+        <p v-if="shareError" class="text-red-500 text-sm">{{ shareError }}</p>
+        <p v-if="hasSharedToday" class="text-gray-500 text-sm">You've already received sharing rewards today. Come back tomorrow!</p>
       </div>
     </div>
   </div>
@@ -214,6 +315,26 @@ const taskId = ref(null);
 const errorMessage = ref(null);
 const pollingInterval = ref(null);
 const previewSectionRef = ref(null);
+
+// 分享相关的状态
+const showShareModal = ref(false);
+const shareUrl = ref('');
+const shareError = ref('');
+const isSubmitting = ref(false);
+const hasSharedToday = ref(false);
+
+// 检查今日是否已分享
+const checkTodayShared = () => {
+  const lastSharedDate = localStorage.getItem('lastSharedDate');
+  const today = new Date().toISOString().split('T')[0];
+  hasSharedToday.value = lastSharedDate === today;
+};
+
+// 处理分享按钮点击
+const handleShareClick = () => {
+  checkTodayShared();
+  showShareModal.value = true;
+};
 
 // 检查用户登录状态和积分
 const checkUserStatus = async () => {
@@ -490,7 +611,74 @@ const isDownloading = ref(false);
 
 const emit = defineEmits(['showLogin', 'updateCredits']);
 
+// 复制图片链接
+const copyImageLink = () => {
+  navigator.clipboard.writeText(generatedImage.value)
+    .then(() => {
+      alert('Link copied to clipboard!');
+    })
+    .catch(() => {
+      alert('Failed to copy link');
+    });
+};
+
+// 提交分享链接
+const submitShare = async () => {
+  if (!shareUrl.value) {
+    shareError.value = 'Please input the post url';
+    return;
+  }
+
+  if (hasSharedToday.value) {
+    shareError.value = 'You can only receive sharing rewards once per day';
+    return;
+  }
+
+  try {
+    isSubmitting.value = true;
+    shareError.value = '';
+
+    const response = await fetch(`${apiBaseUrl}${apiEndpoints.user.share}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      credentials: 'include',
+      body: JSON.stringify({
+        url: shareUrl.value
+      })
+    });
+
+    const result = await response.json();
+
+    if (result.code === 200) {
+      // 记录分享日期
+      const today = new Date().toISOString().split('T')[0];
+      localStorage.setItem('lastSharedDate', today);
+      hasSharedToday.value = true;
+
+      // 更新积分
+      emit('updateCredits', {
+        credits: result.data.credits
+      });
+      alert('Thanks for sharing! The sharing link is under review.');
+      showShareModal.value = false;
+      shareUrl.value = '';
+    } else if (result.code === 401) {
+      emit('showLogin');
+    } else {
+      shareError.value = result.msg || 'Failed to submit share url';
+    }
+  } catch (error) {
+    console.error('Submit share error:', error);
+    shareError.value = 'Network error. Please try again';
+  } finally {
+    isSubmitting.value = false;
+  }
+};
+
 onMounted(() => {
+  checkTodayShared();
   // 移除本地存储相关的初始化代码
 });
 </script>
@@ -506,6 +694,20 @@ onMounted(() => {
   }
   to {
     transform: rotate(360deg);
+  }
+}
+
+/* 添加模态框动画 */
+.fixed {
+  animation: fadeIn 0.2s ease-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
   }
 }
 </style>

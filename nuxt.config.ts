@@ -44,14 +44,15 @@ export default defineNuxtConfig({
   runtimeConfig: {
     public: {
       // 设置为 true 使用开发环境，false 使用生产环境
-      apiBaseUrl: true  // 在这里改 true/false 来切换环境
+      apiBaseUrl: false  // 在这里改 true/false 来切换环境
         ? 'http://localhost:8000'
         : 'https://api.ghibliaigenerator.io',
       apiEndpoints: {
         user: {
           login: '/api/v1/user/login/google',
           info: '/api/v1/user/info',
-          logout: '/api/v1/user/logout'
+          logout: '/api/v1/user/logout',
+          share: '/api/v1/user/share',
         },
         images: {
           task: '/api/v1/images/task'
