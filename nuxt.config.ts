@@ -5,12 +5,6 @@ export default defineNuxtConfig({
   devtools: { enabled: true },
   modules: ['@nuxtjs/sitemap'],
   css: ['~/assets/css/main.css'],
-  // 添加日志配置
-  logLevel: 'warn',
-
-  site: {
-    url: 'https://ghibliaigenerator.io'
-  },
 
   sitemap: {
     hostname: 'https://ghibliaigenerator.io',
@@ -47,5 +41,22 @@ export default defineNuxtConfig({
     }
   },
 
-  compatibilityDate: '2025-04-26',
+  runtimeConfig: {
+    public: {
+      // 设置为 true 使用开发环境，false 使用生产环境
+      apiBaseUrl: true  // 在这里改 true/false 来切换环境
+        ? 'http://localhost:8000'
+        : 'https://api.ghibliaigenerator.io',
+      apiEndpoints: {
+        user: {
+          login: '/api/v1/user/login/google',
+          info: '/api/v1/user/info',
+          logout: '/api/v1/user/logout'
+        },
+        images: {
+          task: '/api/v1/images/task'
+        }
+      }
+    }
+  }
 })

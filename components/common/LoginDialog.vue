@@ -63,6 +63,9 @@
 <script setup>
 import { ref, onMounted, watch } from 'vue';
 
+const config = useRuntimeConfig();
+const { apiBaseUrl, apiEndpoints } = config.public;
+
 const props = defineProps({
   showLoginDialog: {
     type: Boolean,
@@ -78,7 +81,7 @@ const handleGoogleLogin = async (response) => {
   if (response.credential) {
     try {
       isLoading.value = true;
-      const res = await fetch('https://api.ghibliaigenerator.io/api/v1/user/login/google', {
+      const res = await fetch(`${apiBaseUrl}${apiEndpoints.user.login}`, {
         method: 'POST',
         credentials: 'include',
         headers: {
@@ -99,7 +102,7 @@ const handleGoogleLogin = async (response) => {
       }
     } catch (error) {
       console.error('Login error:', error);
-      alert('登录失败，请重试');
+      alert('Login failed. Please try again.');
     } finally {
       isLoading.value = false;
     }

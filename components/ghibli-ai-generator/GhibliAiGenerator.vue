@@ -198,6 +198,9 @@
 <script setup>
 import { ref, onMounted } from 'vue';
 
+const config = useRuntimeConfig();
+const { apiBaseUrl, apiEndpoints } = config.public;
+
 const previewUrl = ref(null);
 const selectedFile = ref(null);
 const generatedImage = ref(null);
@@ -212,13 +215,10 @@ const errorMessage = ref(null);
 const pollingInterval = ref(null);
 const previewSectionRef = ref(null);
 
-// API 基础 URL 配置
-const apiBaseUrl = 'https://api.ghibliaigenerator.io/api/v1/images/task';
-
 // 检查用户登录状态和积分
 const checkUserStatus = async () => {
   try {
-    const res = await fetch('https://api.ghibliaigenerator.io/api/v1/user/info', {
+    const res = await fetch(`${apiBaseUrl}${apiEndpoints.user.info}`, {
       credentials: 'include',
     });
     const data = await res.json();
@@ -251,12 +251,11 @@ const checkUserStatus = async () => {
 // 更新用户积分
 const updateUserCredits = async () => {
   try {
-    const res = await fetch('https://api.ghibliaigenerator.io/api/v1/user/info', {
+    const res = await fetch(`${apiBaseUrl}${apiEndpoints.user.info}`, {
       credentials: 'include',
     });
     const data = await res.json();
     if (data.code === 200) {
-      // 发送事件更新 header 中的积分显示
       emit('updateCredits', {
         user: data.data.user,
         credits: data.data.credits
@@ -281,7 +280,7 @@ const createTask = async () => {
     formData.append('file', selectedFile.value);
     formData.append('size', String(selectedRatio.value));
 
-    const response = await fetch(apiBaseUrl, {
+    const response = await fetch(`${apiBaseUrl}${apiEndpoints.images.task}`, {
       method: 'POST',
       credentials: 'include',
       body: formData
@@ -330,7 +329,7 @@ const createTask = async () => {
 
 const checkTaskStatus = async () => {
   try {
-    const response = await fetch(`${apiBaseUrl}?task_id=${taskId.value}`, {
+    const response = await fetch(`${apiBaseUrl}${apiEndpoints.images.task}?task_id=${taskId.value}`, {
       credentials: 'include'
     });
     const result = await response.json();
