@@ -7,7 +7,7 @@
         <label class="text-lg font-medium mb-2 block">1. Upload Image</label>
         <div
           class="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center cursor-pointer hover:border-[#81b29a] transition-colors h-[200px] flex flex-col items-center justify-center relative"
-          @click="!previewUrl && $refs.fileUpload.click()"
+          @click="!previewUrl && handleImageClick()"
           @drop.prevent="handleDrop"
           @dragover.prevent
         >
@@ -22,13 +22,13 @@
             <button class="border border-gray-300 rounded-md px-4 py-2 hover:bg-gray-50 mx-auto">
               Select Image
             </button>
-            <input ref="fileUpload" type="file" class="hidden" accept="image/*" @change="handleFileChange" />
           </template>
           <div v-else class="relative w-full h-full flex items-center justify-center">
             <img
               :src="previewUrl"
               alt="Preview"
-              class="max-h-full max-w-full object-contain"
+              class="max-h-full max-w-full object-contain cursor-pointer"
+              @click.stop="handleImageClick"
             />
             <button
               class="absolute top-2 right-2 bg-white/80 hover:bg-white rounded-full h-8 w-8 p-1 border border-gray-200 flex items-center justify-center"
@@ -40,44 +40,68 @@
               </svg>
             </button>
           </div>
+          <input 
+            ref="fileUpload" 
+            type="file" 
+            class="hidden" 
+            accept="image/*" 
+            @change="handleFileChange"
+          />
         </div>
       </div>
 
-      <!-- Step 2: Select Ratio -->
+      <!-- Step 2: Select Style -->
       <div class="mb-6">
-        <label class="text-lg font-medium mb-2 block">2. Select Ratio</label>
-        <div class="flex space-x-3">
+        <label class="text-lg font-medium mb-2 block">2. Select Style</label>
+        <div class="grid grid-cols-2 md:flex md:items-center md:gap-3">
           <button 
-            class="px-4 py-3 flex items-center gap-2 rounded-lg transition-all border"
-            :class="selectedRatio === '3:2' ? 'border-[#81b29a] bg-[#81b29a]/5' : 'border-gray-200 hover:border-gray-300'"
-            @click="selectedRatio = '3:2'"
+            v-for="style in defaultStyles.slice(0, 3)" 
+            :key="style.id"
+            class="px-3 py-2 flex flex-col items-center gap-2 rounded-lg transition-all border md:flex-1"
+            :class="selectedStyle === style.id ? 'border-[#81b29a] bg-[#81b29a]/5' : 'border-gray-200 hover:border-gray-300'"
+            @click="selectedStyle = style.id"
           >
-            <div class="w-5 h-4 border rounded-sm"
-              :class="selectedRatio === '3:2' ? 'border-[#81b29a]' : 'border-gray-400'"
-            ></div>
-            <span class="text-sm" :class="selectedRatio === '3:2' ? 'text-[#81b29a]' : 'text-gray-600'">3:2</span>
+            <div class="w-full aspect-square rounded-md overflow-hidden">
+              <img :src="style.icon" :alt="style.name" class="w-full h-full object-cover" />
+            </div>
+            <span class="text-sm text-center" :class="selectedStyle === style.id ? 'text-[#81b29a]' : 'text-gray-600'">{{ style.name }}</span>
           </button>
-          
           <button 
-            class="px-4 py-3 flex items-center gap-2 rounded-lg transition-all border"
-            :class="selectedRatio === '2:3' ? 'border-[#81b29a] bg-[#81b29a]/5' : 'border-gray-200 hover:border-gray-300'"
-            @click="selectedRatio = '2:3'"
+            class="px-3 py-2 flex flex-col items-center gap-2 rounded-lg transition-all border border-gray-200 hover:border-gray-300 md:flex-1"
+            @click="showStyleModal = true"
           >
-            <div class="w-4 h-5 border rounded-sm"
-              :class="selectedRatio === '2:3' ? 'border-[#81b29a]' : 'border-gray-400'"
-            ></div>
-            <span class="text-sm" :class="selectedRatio === '2:3' ? 'text-[#81b29a]' : 'text-gray-600'">2:3</span>
+            <div class="w-full aspect-square rounded-md bg-gray-50 flex items-center justify-center">
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-gray-400">
+                <circle cx="12" cy="12" r="10"></circle>
+                <line x1="12" y1="8" x2="12" y2="16"></line>
+                <line x1="8" y1="12" x2="16" y2="12"></line>
+              </svg>
+            </div>
+            <span class="text-sm text-gray-600">More</span>
           </button>
-          
+        </div>
+      </div>
+
+      <!-- Step 3: Select Ratio -->
+      <div class="mb-6">
+        <label class="text-lg font-medium mb-2 block">3. Select Ratio</label>
+        <div class="flex flex-wrap gap-3">
           <button 
-            class="px-4 py-3 flex items-center gap-2 rounded-lg transition-all border"
-            :class="selectedRatio === '1:1' ? 'border-[#81b29a] bg-[#81b29a]/5' : 'border-gray-200 hover:border-gray-300'"
-            @click="selectedRatio = '1:1'"
+            v-for="ratio in ratios" 
+            :key="ratio.value"
+            class="px-3 py-2 flex items-center gap-2 rounded-lg transition-all border"
+            :class="selectedRatio === ratio.value ? 'border-[#81b29a] bg-[#81b29a]/5' : 'border-gray-200 hover:border-gray-300'"
+            @click="selectedRatio = ratio.value"
           >
-            <div class="w-4 h-4 border rounded-sm"
-              :class="selectedRatio === '1:1' ? 'border-[#81b29a]' : 'border-gray-400'"
+            <div 
+              class="border rounded-sm"
+              :class="selectedRatio === ratio.value ? 'border-[#81b29a]' : 'border-gray-400'"
+              :style="{
+                width: `${ratio.width}px`,
+                height: `${ratio.height}px`
+              }"
             ></div>
-            <span class="text-sm" :class="selectedRatio === '1:1' ? 'text-[#81b29a]' : 'text-gray-600'">1:1</span>
+            <span class="text-sm" :class="selectedRatio === ratio.value ? 'text-[#81b29a]' : 'text-gray-600'">{{ ratio.label }}</span>
           </button>
         </div>
       </div>
@@ -294,6 +318,39 @@
       </div>
     </div>
   </div>
+
+  <!-- Style Modal -->
+  <div v-if="showStyleModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 px-4">
+    <div class="bg-white rounded-lg max-w-2xl w-full p-6 relative max-h-[90vh] overflow-y-auto">
+      <!-- Close Button -->
+      <button 
+        class="absolute top-4 right-4 text-gray-500 hover:text-gray-700"
+        @click="showStyleModal = false"
+      >
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="18" y1="6" x2="6" y2="18"></line>
+          <line x1="6" y1="6" x2="18" y2="18"></line>
+        </svg>
+      </button>
+
+      <!-- Modal Content -->
+      <h3 class="text-xl font-semibold mb-4 text-[#3d405b]">Select Style</h3>
+      <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+        <button 
+          v-for="style in allStyles" 
+          :key="style.id"
+          class="px-3 py-2 flex flex-col items-center gap-2 rounded-lg transition-all border"
+          :class="selectedStyle === style.id ? 'border-[#81b29a] bg-[#81b29a]/5' : 'border-gray-200 hover:border-gray-300'"
+          @click="handleStyleSelect(style.id)"
+        >
+          <div class="w-full aspect-square rounded-md overflow-hidden">
+            <img :src="style.icon" :alt="style.name" class="w-full h-full object-cover" />
+          </div>
+          <span class="text-sm text-center" :class="selectedStyle === style.id ? 'text-[#81b29a]' : 'text-gray-600'">{{ style.name }}</span>
+        </button>
+      </div>
+    </div>
+  </div>
 </template>
 
 <script setup>
@@ -322,6 +379,37 @@ const shareUrl = ref('');
 const shareError = ref('');
 const isSubmitting = ref(false);
 const hasSharedToday = ref(false);
+
+// 风格选择相关
+const showStyleModal = ref(false);
+const selectedStyle = ref('ghibli');
+
+// 默认展示的风格
+const defaultStyles = [
+  { id: 'ghibli', name: 'Ghibli Style', icon: '/images/styles/ghibli.webp' },
+  { id: 'pixar', name: 'Pixar Style', icon: '/images/styles/pixar.webp' },
+  { id: 'child3d', name: 'Child 3D Icon', icon: '/images/styles/child3d.webp' },
+  { id: 'sketch', name: 'Sketch Style', icon: '/images/styles/sketch.webp' },
+];
+
+// 所有可用的风格
+const allStyles = [
+  { id: 'ghibli', name: 'Ghibli Style', icon: '/images/styles/ghibli.webp' },
+  { id: 'pixar', name: 'Pixar Style', icon: '/images/styles/pixar.webp' },
+  { id: 'child3d', name: 'Child 3D Icon', icon: '/images/styles/child3d.webp' },
+  { id: 'sketch', name: 'Sketch Style', icon: '/images/styles/sketch.webp' },
+  { id: 'snoopy', name: 'Snoopy Style', icon: '/images/styles/snoopy.webp' },
+  { id: 'disney', name: 'Disney Style', icon: '/images/styles/disney.webp' },
+  { id: 'pixel', name: 'Pixel Style', icon: '/images/styles/pixel.webp' },
+  { id: 'painting', name: 'Painting Style', icon: '/images/styles/painting.webp' },
+];
+
+// 比例选项
+const ratios = [
+  { value: '3:2', label: '3:2', width: 15, height: 10 },
+  { value: '2:3', label: '2:3', width: 10, height: 15 },
+  { value: '1:1', label: '1:1', width: 12, height: 12 },
+];
 
 // 检查今日是否已分享
 const checkTodayShared = () => {
@@ -400,6 +488,7 @@ const createTask = async () => {
     const formData = new FormData();
     formData.append('file', selectedFile.value);
     formData.append('size', String(selectedRatio.value));
+    formData.append('style', selectedStyle.value);
 
     const response = await fetch(`${apiBaseUrl}${apiEndpoints.images.task}`, {
       method: 'POST',
@@ -677,6 +766,21 @@ const submitShare = async () => {
   }
 };
 
+// 处理风格选择
+const handleStyleSelect = (styleId) => {
+  selectedStyle.value = styleId;
+  showStyleModal.value = false;
+};
+
+// 修改 handleImageClick 方法
+const handleImageClick = () => {
+  const input = fileUpload.value;
+  if (input) {
+    input.value = ''; // 清除之前的选择
+    input.click();
+  }
+};
+
 onMounted(() => {
   checkTodayShared();
   // 移除本地存储相关的初始化代码
@@ -709,5 +813,45 @@ onMounted(() => {
   to {
     opacity: 1;
   }
+}
+
+/* 添加滚动条样式 */
+.max-h-\[90vh\] {
+  scrollbar-width: thin;
+  scrollbar-color: #81b29a #f3f4f6;
+}
+
+.max-h-\[90vh\]::-webkit-scrollbar {
+  width: 6px;
+}
+
+.max-h-\[90vh\]::-webkit-scrollbar-track {
+  background: #f3f4f6;
+  border-radius: 3px;
+}
+
+.max-h-\[90vh\]::-webkit-scrollbar-thumb {
+  background-color: #81b29a;
+  border-radius: 3px;
+}
+
+/* 添加水平滚动条样式 */
+.overflow-x-auto {
+  scrollbar-width: thin;
+  scrollbar-color: #81b29a #f3f4f6;
+}
+
+.overflow-x-auto::-webkit-scrollbar {
+  height: 6px;
+}
+
+.overflow-x-auto::-webkit-scrollbar-track {
+  background: #f3f4f6;
+  border-radius: 3px;
+}
+
+.overflow-x-auto::-webkit-scrollbar-thumb {
+  background-color: #81b29a;
+  border-radius: 3px;
 }
 </style>
