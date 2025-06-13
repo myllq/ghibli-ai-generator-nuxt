@@ -146,87 +146,180 @@
 
     <!-- Right Column - Preview -->
     <div ref="previewSectionRef" class="bg-white p-6 rounded-lg border border-gray-200">
-      <h3 class="text-xl font-semibold mb-4 text-[#3d405b]">Preview</h3>
-
-      <div v-if="isGenerating" class="flex flex-col items-center justify-center h-[300px]">
-        <div class="relative h-40 w-40 mb-4">
-          <div class="absolute inset-0 flex items-center justify-center">
-            <div class="h-32 w-32 rounded-full border-4 border-[#e07a5f] border-opacity-25"></div>
-            <div
-              class="absolute h-32 w-32 rounded-full border-t-4 border-[#e07a5f] animate-spin"
-              :style="{
-                clipPath: `polygon(50% 50%, 50% 0%, ${50 + 50 * Math.sin(progress * 0.0628)}% ${50 - 50 * Math.cos(progress * 0.0628)}%, 50% 50%)`
-              }"
-            ></div>
-          </div>
-          <div class="absolute inset-0 flex items-center justify-center">
-            <span class="text-xl font-bold text-[#3d405b]">{{ progress }}%</span>
-          </div>
-        </div>
-        <p class="text-gray-500">Generating your Ghibli-style image...</p>
-        <p class="text-gray-500 text-sm mt-1">It takes about 1 minute...</p>
+      <!-- Tab Header -->
+      <div class="flex border-b border-gray-200 mb-4">
+        <button 
+          class="px-4 py-2 text-sm font-medium transition-colors relative"
+          :class="!showHistory ? 'text-[#81b29a]' : 'text-gray-500 hover:text-gray-700'"
+          @click="showHistory = false"
+        >
+          Preview
+          <div 
+            v-if="!showHistory" 
+            class="absolute bottom-0 left-0 right-0 h-0.5 bg-[#81b29a]"
+          ></div>
+        </button>
+        <button 
+          class="px-4 py-2 text-sm font-medium transition-colors relative"
+          :class="showHistory ? 'text-[#81b29a]' : 'text-gray-500 hover:text-gray-700'"
+          @click="handleHistoryClick"
+        >
+          History
+          <div 
+            v-if="showHistory" 
+            class="absolute bottom-0 left-0 right-0 h-0.5 bg-[#81b29a]"
+          ></div>
+        </button>
       </div>
-      
-      <div v-else-if="generatedImage" class="space-y-4">
-        <div class="relative h-[300px] rounded-lg overflow-hidden">
-          <img 
-            :src="generatedImage" 
-            alt="Generated Ghibli Image"
-            class="absolute inset-0 w-full h-full object-contain"
-          />
+
+      <!-- Tab Content -->
+      <div class="min-h-[300px]">
+        <!-- History List -->
+        <div v-if="showHistory" class="h-[500px]">
+          <div v-if="historyLoading && historyItems.length === 0" class="h-full flex items-center justify-center">
+            <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-[#81b29a]"></div>
+          </div>
+          <div v-else-if="historyItems.length === 0" class="h-full flex items-center justify-center">
+            <div class="text-center text-gray-500">
+              <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-12 w-12 mx-auto mb-4 text-gray-400">
+                <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                <line x1="3" y1="9" x2="21" y2="9"></line>
+                <line x1="9" y1="21" x2="9" y2="9"></line>
+              </svg>
+              <p>No history records found</p>
+            </div>
+          </div>
+          <div v-else class="h-full overflow-y-auto pr-2" ref="historyContainer">
+            <div class="grid grid-cols-2 gap-4">
+              <div 
+                v-for="item in historyItems" 
+                :key="item.id"
+                class="relative"
+              >
+                <img 
+                  :src="item.generate_img_url" 
+                  :alt="'Generated image ' + item.id"
+                  class="w-full aspect-square object-cover rounded-lg"
+                />
+                <div class="absolute top-2 left-2 bg-black/50 text-white text-[10px] px-1.5 py-0.5 rounded whitespace-nowrap">
+                  {{ formatDate(item.created_at) }}
+                </div>
+                <button
+                  class="absolute bottom-2 right-2 bg-white text-gray-800 px-2 py-1 rounded-md text-xs hover:bg-gray-100 transition-colors flex items-center gap-1 disabled:opacity-50 disabled:cursor-not-allowed"
+                  @click="downloadHistoryImage(item.generate_img_url)"
+                  :disabled="downloadingImageId === item.generate_img_url"
+                >
+                  <template v-if="downloadingImageId === item.generate_img_url">
+                    <div class="flex items-center gap-1">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-3 w-3 animate-spin">
+                        <path d="M21 12a9 9 0 1 1-6.219-8.56"></path>
+                      </svg>
+                      <span>Downloading...</span>
+                    </div>
+                  </template>
+                  <template v-else>
+                    <div class="flex items-center gap-1">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-3 w-3">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                        <polyline points="7 10 12 15 17 10"></polyline>
+                        <line x1="12" y1="15" x2="12" y2="3"></line>
+                      </svg>
+                      <span>Download</span>
+                    </div>
+                  </template>
+                </button>
+              </div>
+            </div>
+            <div v-if="hasMoreHistory" class="py-4 flex justify-center">
+              <div v-if="historyLoading" class="animate-spin rounded-full h-6 w-6 border-b-2 border-[#81b29a]"></div>
+              <div v-else ref="historyObserver" class="h-4"></div>
+            </div>
+          </div>
         </div>
-        <div class="flex justify-center gap-4">
-          <button
-            class="bg-[#e07a5f] hover:bg-[#d8603f] text-white py-2 px-4 rounded-md w-1/2 flex items-center justify-center"
-            :disabled="isDownloading"
-            :class="{ 'opacity-75 cursor-wait': isDownloading }"
-            @click="downloadImage"
-          >
-            <template v-if="isDownloading">
-              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4 mr-2 animate-spin">
-                <path d="M21 12a9 9 0 1 1-6.219-8.56"></path>
-              </svg>
-              <span class="text-sm sm:text-base">Downloading...</span>
-            </template>
-            <template v-else>
-              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4 mr-2">
-                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-                <polyline points="7 10 12 15 17 10"></polyline>
-                <line x1="12" y1="15" x2="12" y2="3"></line>
-              </svg>
-              <span class="text-[14px] sm:text-base">Download</span>
-            </template>
-          </button>
-          <button
-            class="bg-[#81b29a] hover:bg-[#6a9d87] text-white py-2 px-4 rounded-md w-1/2 flex items-center justify-center"
-            @click="handleShareClick"
-            :disabled="hasSharedToday"
-            :class="{ 'opacity-50 cursor-not-allowed': hasSharedToday }"
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4 mr-2">
-              <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"></path>
-              <polyline points="16 6 12 2 8 6"></polyline>
-              <line x1="12" y1="2" x2="12" y2="15"></line>
+
+        <!-- Preview Content -->
+        <div v-else>
+          <div v-if="isGenerating" class="flex flex-col items-center justify-center h-[300px]">
+            <div class="relative h-40 w-40 mb-4">
+              <div class="absolute inset-0 flex items-center justify-center">
+                <div class="h-32 w-32 rounded-full border-4 border-[#e07a5f] border-opacity-25"></div>
+                <div
+                  class="absolute h-32 w-32 rounded-full border-t-4 border-[#e07a5f] animate-spin"
+                  :style="{
+                    clipPath: `polygon(50% 50%, 50% 0%, ${50 + 50 * Math.sin(progress * 0.0628)}% ${50 - 50 * Math.cos(progress * 0.0628)}%, 50% 50%)`
+                  }"
+                ></div>
+              </div>
+              <div class="absolute inset-0 flex items-center justify-center">
+                <span class="text-xl font-bold text-[#3d405b]">{{ progress }}%</span>
+              </div>
+            </div>
+            <p class="text-gray-500">Generating your Ghibli-style image...</p>
+            <p class="text-gray-500 text-sm mt-1">It takes about 1 minute...</p>
+          </div>
+          
+          <div v-else-if="generatedImage" class="space-y-4">
+            <div class="relative h-[300px] rounded-lg overflow-hidden">
+              <img 
+                :src="generatedImage" 
+                alt="Generated Ghibli Image"
+                class="absolute inset-0 w-full h-full object-contain"
+              />
+            </div>
+            <div class="flex justify-center gap-4">
+              <button
+                class="bg-[#e07a5f] hover:bg-[#d8603f] text-white py-2 px-4 rounded-md w-1/2 flex items-center justify-center"
+                :disabled="isDownloading(generatedImage)"
+                :class="{ 'opacity-75 cursor-wait': isDownloading(generatedImage) }"
+                @click="downloadImage"
+              >
+                <template v-if="isDownloading(generatedImage)">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4 mr-2 animate-spin">
+                    <path d="M21 12a9 9 0 1 1-6.219-8.56"></path>
+                  </svg>
+                  <span class="text-sm sm:text-base">Downloading...</span>
+                </template>
+                <template v-else>
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4 mr-2">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                    <polyline points="7 10 12 15 17 10"></polyline>
+                    <line x1="12" y1="15" x2="12" y2="3"></line>
+                  </svg>
+                  <span class="text-[14px] sm:text-base">Download</span>
+                </template>
+              </button>
+              <button
+                class="bg-[#81b29a] hover:bg-[#6a9d87] text-white py-2 px-4 rounded-md w-1/2 flex items-center justify-center"
+                @click="handleShareClick"
+                :disabled="hasSharedToday"
+                :class="{ 'opacity-50 cursor-not-allowed': hasSharedToday }"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4 mr-2">
+                  <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"></path>
+                  <polyline points="16 6 12 2 8 6"></polyline>
+                  <line x1="12" y1="2" x2="12" y2="15"></line>
+                </svg>
+                <span class="text-[14px] sm:text-base whitespace-nowrap">Share (+100)</span>
+              </button>
+            </div>
+          </div>
+
+          <div v-else class="border-2 border-dashed border-gray-300 rounded-lg p-12 text-center h-[300px] flex flex-col items-center justify-center">
+            <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-12 w-12 mx-auto mb-4 text-gray-400">
+              <path d="M15 4V2"></path>
+              <path d="M15 16v-2"></path>
+              <path d="M8 9h2"></path>
+              <path d="M20 9h2"></path>
+              <path d="M17.8 11.8 19 13"></path>
+              <path d="M15 9h0"></path>
+              <path d="M17.8 6.2 19 5"></path>
+              <path d="M3 21l9-9"></path>
+              <path d="M12.2 6.2 11 5"></path>
             </svg>
-            <span class="text-[14px] sm:text-base whitespace-nowrap">Share (+100)</span>
-          </button>
+            <p class="text-gray-500 mb-4">Your Ghibli-style image will appear here</p>
+            <p class="text-gray-400 text-sm">Upload an image to get started</p>
+          </div>
         </div>
-      </div>
-
-      <div v-else class="border-2 border-dashed border-gray-300 rounded-lg p-12 text-center h-[300px] flex flex-col items-center justify-center">
-        <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-12 w-12 mx-auto mb-4 text-gray-400">
-          <path d="M15 4V2"></path>
-          <path d="M15 16v-2"></path>
-          <path d="M8 9h2"></path>
-          <path d="M20 9h2"></path>
-          <path d="M17.8 11.8 19 13"></path>
-          <path d="M15 9h0"></path>
-          <path d="M17.8 6.2 19 5"></path>
-          <path d="M3 21l9-9"></path>
-          <path d="M12.2 6.2 11 5"></path>
-        </svg>
-        <p class="text-gray-500 mb-4">Your Ghibli-style image will appear here</p>
-        <p class="text-gray-400 text-sm">Upload an image to get started</p>
       </div>
     </div>
   </div>
@@ -354,7 +447,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, watch, onUnmounted, nextTick, computed } from 'vue';
 
 const config = useRuntimeConfig();
 const { apiBaseUrl, apiEndpoints } = config.public;
@@ -410,6 +503,109 @@ const ratios = [
   { value: '2:3', label: '2:3', width: 10, height: 15 },
   { value: '1:1', label: '1:1', width: 12, height: 12 },
 ];
+
+// 在 script setup 部分添加
+const showHistory = ref(false);
+const historyItems = ref([]);
+const historyLoading = ref(false);
+const currentPage = ref(1);
+const hasMoreHistory = ref(true);
+const historyObserver = ref(null);
+const historyContainer = ref(null);
+
+// 添加下载状态变量
+const downloadingImageId = ref(null);
+
+// 添加计算属性
+const isDownloading = (imageUrl) => computed(() => downloadingImageId.value === imageUrl);
+
+// 添加 handleHistoryClick 方法
+const handleHistoryClick = () => {
+  showHistory.value = true;
+  // 重置状态
+  historyItems.value = [];
+  currentPage.value = 1;
+  hasMoreHistory.value = true;
+  // 加载数据
+  loadHistory();
+};
+
+// 修改下载历史图片方法
+const downloadHistoryImage = async (imageUrl) => {
+  if (downloadingImageId.value) return;
+  
+  try {
+    downloadingImageId.value = imageUrl;
+    
+    const response = await fetch(imageUrl);
+    if (!response.ok) throw new Error('Download failed');
+    
+    const blob = await response.blob();
+    const blobUrl = window.URL.createObjectURL(blob);
+    const tempLink = document.createElement('a');
+    tempLink.href = blobUrl;
+    tempLink.download = `ghibli-style-${Date.now()}.webp`;
+    document.body.appendChild(tempLink);
+    tempLink.click();
+    document.body.removeChild(tempLink);
+    window.URL.revokeObjectURL(blobUrl);
+  } catch (error) {
+    console.error('Download history image error:', error);
+  } finally {
+    // 添加一个小延迟，确保用户能看到加载状态
+    setTimeout(() => {
+      downloadingImageId.value = null;
+    }, 500);
+  }
+};
+
+// 修改 loadHistory 方法
+const loadHistory = async () => {
+  if (historyLoading.value || !hasMoreHistory.value) return;
+  
+  try {
+    historyLoading.value = true;
+    const response = await fetch(
+      `${apiBaseUrl}/api/v1/images/history?app_id=ghibli_ai_generator&platform=ghibli_image_generator&page=${currentPage.value}&limit=10`,
+      {
+        method: 'GET',
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      }
+    );
+    
+    const result = await response.json();
+    
+    if (result.code === 200) {
+      const { items, total } = result.data;
+      // 保存当前滚动位置
+      const container = historyContainer.value;
+      const scrollPosition = container?.scrollTop || 0;
+      
+      // 添加新数据
+      historyItems.value = [...historyItems.value, ...items];
+      hasMoreHistory.value = historyItems.value.length < total;
+      currentPage.value++;
+      
+      // 在下一个 tick 后恢复滚动位置
+      nextTick(() => {
+        if (container) {
+          container.scrollTop = scrollPosition;
+        }
+      });
+    } else {
+      console.error('Load history failed:', result.msg);
+      hasMoreHistory.value = false;
+    }
+  } catch (error) {
+    console.error('Load history error:', error);
+    hasMoreHistory.value = false;
+  } finally {
+    historyLoading.value = false;
+  }
+};
 
 // 检查今日是否已分享
 const checkTodayShared = () => {
@@ -663,9 +859,9 @@ const resetGenerator = () => {
 };
 
 const downloadImage = async () => {
-  if (generatedImage.value && !isDownloading.value) {
+  if (generatedImage.value && !downloadingImageId.value) {
     try {
-      isDownloading.value = true;
+      downloadingImageId.value = generatedImage.value;
       
       // 获取图片数据
       const response = await fetch(generatedImage.value);
@@ -690,13 +886,10 @@ const downloadImage = async () => {
       console.error('Download error:', error);
       errorMessage.value = 'Failed to download image. Please try again.';
     } finally {
-      isDownloading.value = false;
+      downloadingImageId.value = null;
     }
   }
 };
-
-// 添加下载状态变量
-const isDownloading = ref(false);
 
 const emit = defineEmits(['showLogin', 'updateCredits']);
 
@@ -781,10 +974,44 @@ const handleImageClick = () => {
   }
 };
 
+// 设置无限滚动观察器
 onMounted(() => {
   checkTodayShared();
-  // 移除本地存储相关的初始化代码
+  
+  // 设置无限滚动观察器
+  const observer = new IntersectionObserver(
+    (entries) => {
+      if (entries[0].isIntersecting && showHistory.value && !historyLoading.value) {
+        loadHistory();
+      }
+    },
+    { threshold: 0.1 }
+  );
+
+  watch(historyObserver, (el) => {
+    if (el) {
+      observer.observe(el);
+    }
+  });
+
+  onUnmounted(() => {
+    if (historyObserver.value) {
+      observer.unobserve(historyObserver.value);
+    }
+  });
 });
+
+// 添加日期格式化函数
+const formatDate = (dateString) => {
+  const date = new Date(dateString);
+  return date.toLocaleDateString('en-US', {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit'
+  });
+};
 </script>
 
 <style scoped>
@@ -851,6 +1078,26 @@ onMounted(() => {
 }
 
 .overflow-x-auto::-webkit-scrollbar-thumb {
+  background-color: #81b29a;
+  border-radius: 3px;
+}
+
+/* 添加垂直滚动条样式 */
+.overflow-y-auto {
+  scrollbar-width: thin;
+  scrollbar-color: #81b29a #f3f4f6;
+}
+
+.overflow-y-auto::-webkit-scrollbar {
+  width: 6px;
+}
+
+.overflow-y-auto::-webkit-scrollbar-track {
+  background: #f3f4f6;
+  border-radius: 3px;
+}
+
+.overflow-y-auto::-webkit-scrollbar-thumb {
   background-color: #81b29a;
   border-radius: 3px;
 }
