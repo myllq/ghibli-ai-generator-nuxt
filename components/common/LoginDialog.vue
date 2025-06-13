@@ -17,7 +17,7 @@
           Welcome to Ghibli AI Generator
         </h2>
         <p class="text-sm sm:text-base text-[#e07a5f] mb-6 sm:mb-8">
-          Get 10 free credits on first sign-in!
+          Get 30 free credits on first sign-in!
         </p>
         <div class="relative">
           <div 
