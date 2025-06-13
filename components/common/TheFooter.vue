@@ -25,6 +25,8 @@
           <ul class="space-y-2 text-sm">
             <li>
               <a href="/" class="hover:text-[#3d405b]">Ghibli AI Generator</a>
+            </li>
+            <li>
               <a href="https://right-ai.com/" title="RightAI Tools Directory">RightAI Tools Diresctory</a> 
             </li>
           </ul>
