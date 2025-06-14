@@ -149,7 +149,7 @@
       <!-- Tab Header -->
       <div class="flex border-b border-gray-200 mb-4">
         <button 
-          class="px-4 py-2 text-sm font-medium transition-colors relative"
+          class="px-4 py-2 text-[18px] font-medium transition-colors relative"
           :class="!showHistory ? 'text-[#81b29a]' : 'text-gray-500 hover:text-gray-700'"
           @click="showHistory = false"
         >
@@ -160,7 +160,7 @@
           ></div>
         </button>
         <button 
-          class="px-4 py-2 text-sm font-medium transition-colors relative"
+          class="px-4 py-2 text-[18px] font-medium transition-colors relative"
           :class="showHistory ? 'text-[#81b29a]' : 'text-gray-500 hover:text-gray-700'"
           @click="handleHistoryClick"
         >
@@ -691,6 +691,12 @@ const createTask = async () => {
       credentials: 'include',
       body: formData
     });
+    
+    // 处理413错误
+    if (response.status === 413) {
+      errorMessage.value = 'File size too large. Please try a smaller image';
+      return false;
+    }
     
     const result = await response.json();
     
